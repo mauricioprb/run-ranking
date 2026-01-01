@@ -13,7 +13,9 @@ export class StravaGateway {
     this.clientSecret = process.env.STRAVA_CLIENT_SECRET!;
 
     if (!this.clientId || !this.clientSecret) {
-      throw new Error("Credenciais do Strava não configuradas (STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET)");
+      throw new Error(
+        "Credenciais do Strava não configuradas (STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET)",
+      );
     }
   }
 
@@ -60,8 +62,8 @@ export class StravaGateway {
     }
 
     const dados = await resposta.json();
-    
-    return dados as RespostaTokenStrava; 
+
+    return dados as RespostaTokenStrava;
   }
 
   async buscarAtividades(tokenAcesso: string, apos: number): Promise<AtividadeStrava[]> {

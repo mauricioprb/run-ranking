@@ -12,14 +12,18 @@ export const SchemaAtividadeStrava = z.object({
   start_date_local: z.string().datetime(),
   timezone: z.string(),
   utc_offset: z.number(),
-  map: z.object({
-    id: z.string(),
-    summary_polyline: z.string().nullable().optional(),
-    resource_state: z.number().optional(),
-  }).optional(),
-  athlete: z.object({
-    id: z.number(),
-  }).optional(),
+  map: z
+    .object({
+      id: z.string(),
+      summary_polyline: z.string().nullable().optional(),
+      resource_state: z.number().optional(),
+    })
+    .optional(),
+  athlete: z
+    .object({
+      id: z.number(),
+    })
+    .optional(),
 });
 
 export type AtividadeStrava = z.infer<typeof SchemaAtividadeStrava>;

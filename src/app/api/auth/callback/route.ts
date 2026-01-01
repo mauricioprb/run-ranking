@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { ServicoAutenticacao } from "@/core/services/auth";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -22,8 +22,6 @@ export async function GET(request: Request) {
   } catch (err: any) {
     console.error("Erro no callback de auth:", err);
     const message = err instanceof Error ? err.message : "Erro desconhecido";
-    return NextResponse.redirect(
-      new URL(`/?error=${encodeURIComponent(message)}`, request.url)
-    );
+    return NextResponse.redirect(new URL(`/?error=${encodeURIComponent(message)}`, request.url));
   }
 }

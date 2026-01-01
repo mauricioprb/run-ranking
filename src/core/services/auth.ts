@@ -1,5 +1,6 @@
 import { StravaGateway } from "@/infra/strava/gateway";
 import { criarClienteSupabase } from "@/infra/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 
 export class ServicoAutenticacao {
   private stravaGateway: StravaGateway;
@@ -25,7 +26,9 @@ export class ServicoAutenticacao {
     }
 
     if (!corredorExistente) {
-      throw new Error("Acesso negado: Você não está cadastrado no sistema. Solicite um convite ao administrador.");
+      throw new Error(
+        "Acesso negado: Você não está cadastrado no sistema. Solicite um convite ao administrador.",
+      );
     }
 
     const supabaseAdmin = this.criarClienteAdmin();
@@ -68,7 +71,7 @@ export class ServicoAutenticacao {
 
     try {
       const novosTokens = await this.stravaGateway.atualizarToken(corredor.token_atualizacao);
-      
+
       await supabaseAdmin
         .from("corredores")
         .update({
@@ -86,10 +89,9 @@ export class ServicoAutenticacao {
   }
 
   private criarClienteAdmin() {
-    const { createClient } = require('@supabase/supabase-js');
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    
+
     if (!serviceKey) {
       throw new Error("SUPABASE_SERVICE_ROLE_KEY não definida");
     }
@@ -97,8 +99,8 @@ export class ServicoAutenticacao {
     return createClient(url, serviceKey, {
       auth: {
         autoRefreshToken: false,
-        persistSession: false
-      }
+        persistSession: false,
+      },
     });
   }
 }

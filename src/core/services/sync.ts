@@ -10,10 +10,10 @@ export class ServicoSincronizacao {
   constructor() {
     this.stravaGateway = new StravaGateway();
     this.authService = new ServicoAutenticacao();
-    
+
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    
+
     if (!serviceKey) {
       throw new Error("SUPABASE_SERVICE_ROLE_KEY não definida");
     }
@@ -21,8 +21,8 @@ export class ServicoSincronizacao {
     this.supabaseAdmin = createClient(url, serviceKey, {
       auth: {
         autoRefreshToken: false,
-        persistSession: false
-      }
+        persistSession: false,
+      },
     });
   }
 
@@ -37,11 +37,16 @@ export class ServicoSincronizacao {
     }
 
     if (!corredores || corredores.length === 0) {
-      return { mensagem: "Nenhum corredor ativo para sincronizar", total: 0, sucessos: 0, falhas: 0 };
+      return {
+        mensagem: "Nenhum corredor ativo para sincronizar",
+        total: 0,
+        sucessos: 0,
+        falhas: 0,
+      };
     }
 
     const resultados = await Promise.allSettled(
-      corredores.map((corredor) => this.sincronizarCorredor(corredor))
+      corredores.map((corredor) => this.sincronizarCorredor(corredor)),
     );
 
     const sucessos = resultados.filter((r) => r.status === "fulfilled").length;
@@ -67,7 +72,7 @@ export class ServicoSincronizacao {
       const agora = new Date();
       const inicioDoAno = new Date(agora.getFullYear(), 0, 1);
       const timestampInicioAno = Math.floor(inicioDoAno.getTime() / 1000);
-      
+
       const atividades = await this.stravaGateway.buscarAtividades(tokenAcesso, timestampInicioAno);
 
       const corridas = atividades.filter((a) => a.type === "Run");
@@ -84,9 +89,7 @@ export class ServicoSincronizacao {
         tipo: a.type,
       }));
 
-      const { error } = await this.supabaseAdmin
-        .from("atividades")
-        .upsert(dadosUpsert);
+      const { error } = await this.supabaseAdmin.from("atividades").upsert(dadosUpsert);
 
       if (error) {
         throw new Error(`Erro ao salvar atividades: ${error.message}`);
