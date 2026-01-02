@@ -6,6 +6,8 @@ import { DateRangeFilter } from "@/components/date-range-filter";
 import { Trophy } from "lucide-react";
 import Link from "next/link";
 import { RankingList } from "@/components/ranking-list";
+import { Analytics } from "@/components/analytics";
+import { getRankingData } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +21,8 @@ export default async function Home({
   const anoSelecionado = yearParam ? parseInt(yearParam) : new Date().getFullYear();
   const startDate = params.startDate;
   const endDate = params.endDate;
+
+  const ranking = await getRankingData(anoSelecionado, startDate, endDate);
 
   return (
     <main className="min-h-screen bg-background p-4 md:p-8">
@@ -77,6 +81,8 @@ export default async function Home({
             <RankingList year={anoSelecionado} startDate={startDate} endDate={endDate} />
           </CardContent>
         </Card>
+
+        <Analytics ranking={ranking} />
       </div>
     </main>
   );

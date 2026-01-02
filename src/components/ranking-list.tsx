@@ -1,4 +1,5 @@
-import { criarClienteSupabase } from "@/infra/supabase/server";
+import { getRankingData } from "@/lib/data";
+import { cn } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -11,79 +12,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Medal, Crown } from "lucide-react";
 
-type Atividade = {
-  distancia: number;
-  data_inicio: string;
-};
-
-type Corredor = {
-  strava_id: number;
-  nome: string;
-  url_avatar: string | null;
-  atividades: Atividade[];
-};
-
-export async function RankingList({ year, startDate, endDate }: { year: number; startDate?: string; endDate?: string }) {
-  const supabase = await criarClienteSupabase();
-
-  const { data: corredoresRaw, error } = await supabase
-    .from("corredores")
-    .select(
-      `
-      strava_id,
-      nome,
-      url_avatar,
-      atividades (
-        distancia,
-        data_inicio
-      )
-    `,
-    )
-    .eq("esta_ativo", true)
-    .not("url_avatar", "is", null);
-
-  if (error) {
-    console.error("Erro ao buscar dados:", error);
-    return (
-      <div className="flex h-24 items-center justify-center">
-        <p className="text-destructive">Erro ao carregar o ranking.</p>
-      </div>
-    );
-  }
-
-  const start = startDate ? new Date(startDate) : null;
-  const end = endDate ? new Date(endDate) : null;
-  
-  // Ajustar o final do dia para incluir todas as atividades do dia selecionado
-  if (end) {
-    end.setHours(23, 59, 59, 999);
-  }
-
-  const ranking = (corredoresRaw as unknown as Corredor[])
-    .map((corredor) => {
-      const distanciaTotalMetros = corredor.atividades.reduce((acc, curr) => {
-        const dataAtividade = new Date(curr.data_inicio);
-        
-        if (start && end) {
-          if (dataAtividade >= start && dataAtividade <= end) {
-            return acc + curr.distancia;
-          }
-          return acc;
-        }
-
-        const anoAtividade = dataAtividade.getUTCFullYear();
-        if (anoAtividade === year) {
-          return acc + curr.distancia;
-        }
-        return acc;
-      }, 0);
-
-      return {
-        ...corredor,
-        distanciaTotalKm: distanciaTotalMetros / 1000,
-      };
-    })
-    .sort((a, b) => b.distanciaTotalKm - a.distanciaTotalKm);
+export async function RankingList({
+  year,
+  startDate,
+  endDate,
+}: {
+  year: number;
+  startDate?: string;
+  endDate?: string;
+}) {
+  const ranking = await getRankingData(year, startDate, endDate);
 
   return (
     <Table>
@@ -106,6 +44,11 @@ export async function RankingList({ year, startDate, endDate }: { year: number; 
           else if (posicao === 2) iconePosicao = <Medal className="h-5 w-5 text-gray-400" />;
           else if (posicao === 3) iconePosicao = <Medal className="h-5 w-5 text-amber-700" />;
 
+          let badgeColorClass = "";
+          if (posicao === 1) badgeColorClass = "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500/25";
+          else if (posicao === 2) badgeColorClass = "bg-slate-400/15 text-slate-600 dark:text-slate-400 hover:bg-slate-400/25";
+          else if (posicao === 3) badgeColorClass = "bg-amber-700/15 text-amber-700 dark:text-amber-500 hover:bg-amber-700/25";
+
           return (
             <TableRow key={atleta.strava_id}>
               <TableCell className="text-center font-medium p-2 sm:p-4">
@@ -122,7 +65,7 @@ export async function RankingList({ year, startDate, endDate }: { year: number; 
                   <div className="flex flex-col min-w-0">
                     <span className="font-medium text-sm sm:text-base truncate">{atleta.nome}</span>
                     {posicao <= 3 && (
-                      <Badge variant="secondary" className="w-fit text-[10px] px-1 py-0 h-5">
+                      <Badge variant="secondary" className={cn("w-fit text-[10px] px-1 py-0 h-5", badgeColorClass)}>
                         Top {posicao}
                       </Badge>
                     )}
