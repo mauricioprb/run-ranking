@@ -23,7 +23,7 @@ type Corredor = {
   atividades: Atividade[];
 };
 
-export async function RankingList({ year }: { year: number }) {
+export async function RankingList({ year, startDate, endDate }: { year: number; startDate?: string; endDate?: string }) {
   const supabase = await criarClienteSupabase();
 
   const { data: corredoresRaw, error } = await supabase
@@ -51,12 +51,27 @@ export async function RankingList({ year }: { year: number }) {
     );
   }
 
+  const start = startDate ? new Date(startDate) : null;
+  const end = endDate ? new Date(endDate) : null;
+  
+  // Ajustar o final do dia para incluir todas as atividades do dia selecionado
+  if (end) {
+    end.setHours(23, 59, 59, 999);
+  }
+
   const ranking = (corredoresRaw as unknown as Corredor[])
     .map((corredor) => {
       const distanciaTotalMetros = corredor.atividades.reduce((acc, curr) => {
         const dataAtividade = new Date(curr.data_inicio);
-        const anoAtividade = dataAtividade.getUTCFullYear();
+        
+        if (start && end) {
+          if (dataAtividade >= start && dataAtividade <= end) {
+            return acc + curr.distancia;
+          }
+          return acc;
+        }
 
+        const anoAtividade = dataAtividade.getUTCFullYear();
         if (anoAtividade === year) {
           return acc + curr.distancia;
         }

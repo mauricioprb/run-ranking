@@ -2,16 +2,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
 import { YearSelect } from "@/components/year-select";
+import { DateRangeFilter } from "@/components/date-range-filter";
 import { Trophy } from "lucide-react";
 import Link from "next/link";
 import { RankingList } from "@/components/ranking-list";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ year?: string }> }) {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ year?: string; startDate?: string; endDate?: string }>;
+}) {
   const params = await searchParams;
   const yearParam = params.year;
   const anoSelecionado = yearParam ? parseInt(yearParam) : new Date().getFullYear();
+  const startDate = params.startDate;
+  const endDate = params.endDate;
 
   return (
     <main className="min-h-screen bg-background p-4 md:p-8">
@@ -36,7 +43,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ y
               style={{ backgroundColor: "#FC5200", color: "#FFFFFF" }}
             >
               <Link href="/auth/login" className="flex items-center justify-center gap-1">
-                <span className="text-xs uppercase font-bold">Conectar com</span>
+                <span className="text-xs uppercase font-bold">Conectar com o</span>
                 <svg
                   viewBox="0 25 176 35"
                   fill="currentColor"
@@ -61,10 +68,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ y
               <CardTitle>Classificação Geral</CardTitle>
               <CardDescription>Ordenado pela distância total percorrida.</CardDescription>
             </div>
-            <YearSelect currentYear={anoSelecionado} className="w-full md:w-auto" />
+            <div className="flex flex-col gap-2 w-full md:w-auto md:flex-row md:items-center">
+              <DateRangeFilter className="w-full md:w-65" />
+              <YearSelect currentYear={anoSelecionado} className="w-full md:w-auto" />
+            </div>
           </CardHeader>
           <CardContent>
-            <RankingList year={anoSelecionado} />
+            <RankingList year={anoSelecionado} startDate={startDate} endDate={endDate} />
           </CardContent>
         </Card>
       </div>
