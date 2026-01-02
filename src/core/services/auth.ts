@@ -40,17 +40,15 @@ export class ServicoAutenticacao {
       }
     } else {
       // Se é novo, cria como INATIVO (aguardando aprovação)
-      const { error: erroInsert } = await supabaseAdmin
-        .from("corredores")
-        .insert({
-          strava_id: athlete.id,
-          nome: `${athlete.firstname} ${athlete.lastname}`,
-          url_avatar: athlete.profile,
-          token_acesso: access_token,
-          token_atualizacao: refresh_token,
-          expira_em: expires_at,
-          esta_ativo: false, // Precisa de aprovação manual
-        });
+      const { error: erroInsert } = await supabaseAdmin.from("corredores").insert({
+        strava_id: athlete.id,
+        nome: `${athlete.firstname} ${athlete.lastname}`,
+        url_avatar: athlete.profile,
+        token_acesso: access_token,
+        token_atualizacao: refresh_token,
+        expira_em: expires_at,
+        esta_ativo: false, // Precisa de aprovação manual
+      });
 
       if (erroInsert) {
         throw new Error(`Erro ao cadastrar corredor: ${erroInsert.message}`);

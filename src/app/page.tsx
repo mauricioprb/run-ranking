@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
-import { Trophy, Medal } from "lucide-react";
+import { Trophy, Medal, Crown } from "lucide-react";
 import Link from "next/link";
 
 type Atividade = {
@@ -138,7 +138,7 @@ export default async function Home() {
                   const posicao = index + 1;
                   let iconePosicao = null;
 
-                  if (posicao === 1) iconePosicao = <Medal className="h-5 w-5 text-yellow-500" />;
+                  if (posicao === 1) iconePosicao = <Crown className="h-5 w-5 text-yellow-500" />;
                   else if (posicao === 2)
                     iconePosicao = <Medal className="h-5 w-5 text-gray-400" />;
                   else if (posicao === 3)
@@ -166,7 +166,10 @@ export default async function Home() {
                               {atleta.nome}
                             </span>
                             {posicao <= 3 && (
-                              <Badge variant="secondary" className="w-fit text-[10px] px-1 py-0 h-5">
+                              <Badge
+                                variant="secondary"
+                                className="w-fit text-[10px] px-1 py-0 h-5"
+                              >
                                 Top {posicao}
                               </Badge>
                             )}
