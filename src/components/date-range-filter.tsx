@@ -76,7 +76,7 @@ export function DateRangeFilter({ className }: { className?: string }) {
             id="date"
             variant={"outline"}
             className={cn(
-              "gap-2 font-bold h-10 w-full justify-start text-left",
+              "gap-2 font-bold h-10 w-full justify-start text-left cursor-pointer",
               !date && "text-muted-foreground",
             )}
           >

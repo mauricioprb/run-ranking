@@ -34,8 +34,11 @@ export default async function Home({
             </div>
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Runking</h1>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground mb-1">
                 Classificação anual de 01/01/{anoSelecionado} a 31/12/{anoSelecionado}
+              </p>
+              <p className="text-muted-foreground text-xs font-bold">
+                Apenas para membros convidados
               </p>
             </div>
           </div>
