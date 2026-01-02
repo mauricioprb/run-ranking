@@ -21,7 +21,7 @@ export function ModeToggle() {
       ref={ref}
       variant="outline"
       size="icon"
-      className="h-10 w-10 cursor-pointer"
+      className="h-10 w-10 cursor-pointer shrink-0"
       onClick={toggleSwitchTheme}
     >
       <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />

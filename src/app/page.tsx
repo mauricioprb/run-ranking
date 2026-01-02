@@ -1,78 +1,21 @@
-import { criarClienteSupabase } from "@/infra/supabase/server";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
-import { Trophy, Medal, Crown } from "lucide-react";
+import { YearSelect } from "@/components/year-select";
+import { Trophy } from "lucide-react";
 import Link from "next/link";
+import { RankingList } from "@/components/ranking-list";
 
-type Atividade = {
-  distancia: number;
-  data_inicio: string;
-};
+export const dynamic = "force-dynamic";
 
-type Corredor = {
-  strava_id: number;
-  nome: string;
-  url_avatar: string | null;
-  atividades: Atividade[];
-};
-
-export default async function Home() {
-  const supabase = await criarClienteSupabase();
-
-  const { data: corredoresRaw, error } = await supabase
-    .from("corredores")
-    .select(
-      `
-      strava_id,
-      nome,
-      url_avatar,
-      atividades (
-        distancia,
-        data_inicio
-      )
-    `,
-    )
-    .eq("esta_ativo", true)
-    .not("url_avatar", "is", null);
-
-  if (error) {
-    console.error("Erro ao buscar dados:", error);
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-destructive">Erro ao carregar o ranking.</p>
-      </div>
-    );
-  }
-
-  const anoAtual = new Date().getFullYear();
-
-  const ranking = (corredoresRaw as unknown as Corredor[])
-    .map((corredor) => {
-      const distanciaTotalMetros = corredor.atividades.reduce((acc, curr) => {
-        const dataAtividade = new Date(curr.data_inicio);
-        if (dataAtividade.getFullYear() === anoAtual) {
-          return acc + curr.distancia;
-        }
-        return acc;
-      }, 0);
-
-      return {
-        ...corredor,
-        distanciaTotalKm: distanciaTotalMetros / 1000,
-      };
-    })
-    .sort((a, b) => b.distanciaTotalKm - a.distanciaTotalKm);
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ year?: string }>;
+}) {
+  const params = await searchParams;
+  const yearParam = params.year;
+  const anoSelecionado = yearParam ? parseInt(yearParam) : new Date().getFullYear();
 
   return (
     <main className="min-h-screen bg-background p-4 md:p-8">
@@ -85,7 +28,7 @@ export default async function Home() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Runking</h1>
               <p className="text-muted-foreground">
-                Classificação anual de 01/01/{anoAtual} a 31/12/{anoAtual}
+                Classificação anual de 01/01/{anoSelecionado} a 31/12/{anoSelecionado}
               </p>
             </div>
           </div>
@@ -117,81 +60,15 @@ export default async function Home() {
         </div>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Classificação Geral</CardTitle>
-            <CardDescription>Ordenado pela distância total percorrida.</CardDescription>
+          <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:space-y-0 pb-2">
+            <div className="space-y-1">
+              <CardTitle>Classificação Geral</CardTitle>
+              <CardDescription>Ordenado pela distância total percorrida.</CardDescription>
+            </div>
+            <YearSelect currentYear={anoSelecionado} className="w-full md:w-auto" />
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12 text-center">Pos.</TableHead>
-                  <TableHead>Atleta</TableHead>
-                  <TableHead className="text-right">
-                    <span className="hidden sm:inline">Distância Total</span>
-                    <span className="sm:hidden">Dist.</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {ranking.map((atleta, index) => {
-                  const posicao = index + 1;
-                  let iconePosicao = null;
-
-                  if (posicao === 1) iconePosicao = <Crown className="h-5 w-5 text-yellow-500" />;
-                  else if (posicao === 2)
-                    iconePosicao = <Medal className="h-5 w-5 text-gray-400" />;
-                  else if (posicao === 3)
-                    iconePosicao = <Medal className="h-5 w-5 text-amber-700" />;
-
-                  return (
-                    <TableRow key={atleta.strava_id}>
-                      <TableCell className="text-center font-medium p-2 sm:p-4">
-                        <div className="flex justify-center">
-                          {iconePosicao || (
-                            <span className="text-muted-foreground">#{posicao}</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="p-2 sm:p-4">
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                            <AvatarImage src={atleta.url_avatar || ""} alt={atleta.nome} />
-                            <AvatarFallback>
-                              {atleta.nome.substring(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex flex-col min-w-0">
-                            <span className="font-medium text-sm sm:text-base truncate">
-                              {atleta.nome}
-                            </span>
-                            {posicao <= 3 && (
-                              <Badge
-                                variant="secondary"
-                                className="w-fit text-[10px] px-1 py-0 h-5"
-                              >
-                                Top {posicao}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-bold text-sm sm:text-base p-2 sm:p-4 whitespace-nowrap">
-                        {atleta.distanciaTotalKm.toFixed(1)} km
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-
-                {ranking.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
-                      Nenhum dado de corrida encontrado.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+            <RankingList year={anoSelecionado} />
           </CardContent>
         </Card>
       </div>

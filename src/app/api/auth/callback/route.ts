@@ -1,4 +1,5 @@
 import { ServicoAutenticacao } from "@/core/services/auth";
+import { ServicoSincronizacao } from "@/core/services/sync";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -16,7 +17,12 @@ export async function GET(request: Request) {
 
   try {
     const authService = new ServicoAutenticacao();
-    await authService.loginComStrava(code);
+    const resultado = await authService.loginComStrava(code);
+
+    // Sincroniza as atividades imediatamente após o login
+    const syncService = new ServicoSincronizacao();
+    // Executa em background para não travar o redirect
+    syncService.sincronizarCorredor({ strava_id: resultado.corredor.id }).catch(console.error);
 
     return NextResponse.redirect(new URL("/?success=true", request.url));
   } catch (err: any) {

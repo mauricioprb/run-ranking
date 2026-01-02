@@ -67,20 +67,34 @@ export class StravaGateway {
   }
 
   async buscarAtividades(tokenAcesso: string, apos: number): Promise<AtividadeStrava[]> {
-    const url = `${this.baseUrl}/athlete/activities?after=${apos}&per_page=200`;
-    const resposta = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${tokenAcesso}`,
-      },
-      cache: "no-store",
-    });
+    let pagina = 1;
+    let todasAtividades: AtividadeStrava[] = [];
+    
+    while (true) {
+      const url = `${this.baseUrl}/athlete/activities?after=${apos}&per_page=200&page=${pagina}`;
+      const resposta = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${tokenAcesso}`,
+        },
+        cache: "no-store",
+      });
 
-    if (!resposta.ok) {
-      const erro = await resposta.text();
-      throw new Error(`Falha ao buscar atividades no Strava: ${erro}`);
+      if (!resposta.ok) {
+        const erro = await resposta.text();
+        throw new Error(`Falha ao buscar atividades no Strava: ${erro}`);
+      }
+
+      const dados = await resposta.json();
+      const atividadesPagina = z.array(SchemaAtividadeStrava).parse(dados);
+
+      if (atividadesPagina.length === 0) {
+        break;
+      }
+
+      todasAtividades = [...todasAtividades, ...atividadesPagina];
+      pagina++;
     }
 
-    const dados = await resposta.json();
-    return z.array(SchemaAtividadeStrava).parse(dados);
+    return todasAtividades;
   }
 }
