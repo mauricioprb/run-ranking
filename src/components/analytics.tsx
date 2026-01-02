@@ -36,13 +36,33 @@ import { RankingItem } from "@/lib/data";
 
 export function Analytics({ ranking }: { ranking: RankingItem[] }) {
   const months = [
-    "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-    "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+    "Jan",
+    "Fev",
+    "Mar",
+    "Abr",
+    "Mai",
+    "Jun",
+    "Jul",
+    "Ago",
+    "Set",
+    "Out",
+    "Nov",
+    "Dez",
   ];
 
   const fullMonths = [
-    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
   ];
 
   const monthlyDistance = new Array(12).fill(0);
@@ -50,7 +70,7 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
   ranking.forEach((runner) => {
     runner.atividades.forEach((activity) => {
       const date = new Date(activity.data_inicio);
-      const monthIndex = date.getUTCMonth(); 
+      const monthIndex = date.getUTCMonth();
       monthlyDistance[monthIndex] += activity.distancia / 1000;
     });
   });
@@ -73,7 +93,7 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
     "10km": 0,
     "21km": 0,
     "42km": 0,
-    "Ultra": 0,
+    Ultra: 0,
   };
 
   ranking.forEach((runner) => {
@@ -131,7 +151,10 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
     return pieData.reduce((acc, curr) => acc + curr.distance, 0);
   }, [pieData]);
 
-  const maxMonthIndex = monthlyDistance.reduce((maxIdx, curr, idx, arr) => curr > arr[maxIdx] ? idx : maxIdx, 0);
+  const maxMonthIndex = monthlyDistance.reduce(
+    (maxIdx, curr, idx, arr) => (curr > arr[maxIdx] ? idx : maxIdx),
+    0,
+  );
 
   const top3 = ranking.slice(0, 3);
   const areaChartData = months.map((month, index) => {
@@ -168,15 +191,10 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
         <Card>
           <CardHeader className="items-center pb-4">
             <CardTitle>Volume Mensal</CardTitle>
-            <CardDescription>
-              Total de km percorridos por mês (Todos os atletas)
-            </CardDescription>
+            <CardDescription>Total de km percorridos por mês (Todos os atletas)</CardDescription>
           </CardHeader>
           <CardContent className="pb-0">
-            <ChartContainer
-              config={radarConfig}
-              className="mx-auto aspect-square max-h-[250px]"
-            >
+            <ChartContainer config={radarConfig} className="mx-auto aspect-square max-h-[250px]">
               <RadarChart data={radarData} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                 <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                 <PolarAngleAxis dataKey="month" />
@@ -207,15 +225,9 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
             <CardDescription>Km totais divididos por tipo de treino</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
-            <ChartContainer
-              config={pieConfig}
-              className="mx-auto aspect-square max-h-[250px]"
-            >
+            <ChartContainer config={pieConfig} className="mx-auto aspect-square max-h-[250px]">
               <PieChart>
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
-                />
+                <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
                 <Pie
                   data={pieData}
                   dataKey="distance"
@@ -277,30 +289,14 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
               <defs>
                 {top3.map((_, i) => (
                   <linearGradient key={i} id={`fillRunner${i}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor={`var(--color-runner${i})`}
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor={`var(--color-runner${i})`}
-                      stopOpacity={0.1}
-                    />
+                    <stop offset="5%" stopColor={`var(--color-runner${i})`} stopOpacity={0.8} />
+                    <stop offset="95%" stopColor={`var(--color-runner${i})`} stopOpacity={0.1} />
                   </linearGradient>
                 ))}
               </defs>
               <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="month"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-              />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent indicator="dot" />}
-              />
+              <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+              <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
               {top3.map((_, i) => (
                 <Area
                   key={i}

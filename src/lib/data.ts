@@ -16,7 +16,11 @@ export type RankingItem = Corredor & {
   distanciaTotalKm: number;
 };
 
-export async function getRankingData(year: number, startDate?: string, endDate?: string): Promise<RankingItem[]> {
+export async function getRankingData(
+  year: number,
+  startDate?: string,
+  endDate?: string,
+): Promise<RankingItem[]> {
   const supabase = await criarClienteSupabase();
 
   const { data: corredoresRaw, error } = await supabase

@@ -45,9 +45,15 @@ export async function RankingList({
           else if (posicao === 3) iconePosicao = <Medal className="h-5 w-5 text-amber-700" />;
 
           let badgeColorClass = "";
-          if (posicao === 1) badgeColorClass = "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500/25";
-          else if (posicao === 2) badgeColorClass = "bg-slate-400/15 text-slate-600 dark:text-slate-400 hover:bg-slate-400/25";
-          else if (posicao === 3) badgeColorClass = "bg-amber-700/15 text-amber-700 dark:text-amber-500 hover:bg-amber-700/25";
+          if (posicao === 1)
+            badgeColorClass =
+              "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500/25";
+          else if (posicao === 2)
+            badgeColorClass =
+              "bg-slate-400/15 text-slate-600 dark:text-slate-400 hover:bg-slate-400/25";
+          else if (posicao === 3)
+            badgeColorClass =
+              "bg-amber-700/15 text-amber-700 dark:text-amber-500 hover:bg-amber-700/25";
 
           return (
             <TableRow key={atleta.strava_id}>
@@ -65,7 +71,10 @@ export async function RankingList({
                   <div className="flex flex-col min-w-0">
                     <span className="font-medium text-sm sm:text-base truncate">{atleta.nome}</span>
                     {posicao <= 3 && (
-                      <Badge variant="secondary" className={cn("w-fit text-[10px] px-1 py-0 h-5", badgeColorClass)}>
+                      <Badge
+                        variant="secondary"
+                        className={cn("w-fit text-[10px] px-1 py-0 h-5", badgeColorClass)}
+                      >
                         Top {posicao}
                       </Badge>
                     )}
