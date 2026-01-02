@@ -99,46 +99,46 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
   ranking.forEach((runner) => {
     runner.atividades.forEach((activity) => {
       const distKm = activity.distancia / 1000;
-      if (distKm <= 3) buckets["3km"] += distKm;
-      else if (distKm <= 5) buckets["5km"] += distKm;
-      else if (distKm <= 10) buckets["10km"] += distKm;
-      else if (distKm <= 21) buckets["21km"] += distKm;
-      else if (distKm <= 42) buckets["42km"] += distKm;
-      else buckets["Ultra"] += distKm;
+      if (distKm <= 3) buckets["3km"] += 1;
+      else if (distKm <= 5) buckets["5km"] += 1;
+      else if (distKm <= 10) buckets["10km"] += 1;
+      else if (distKm <= 21) buckets["21km"] += 1;
+      else if (distKm <= 42) buckets["42km"] += 1;
+      else buckets["Ultra"] += 1;
     });
   });
 
   const pieData = [
-    { range: "Até 3km", distance: Math.round(buckets["3km"]), fill: "var(--color-range-3km)" },
-    { range: "3-5km", distance: Math.round(buckets["5km"]), fill: "var(--color-range-5km)" },
-    { range: "5-10km", distance: Math.round(buckets["10km"]), fill: "var(--color-range-10km)" },
-    { range: "10-21km", distance: Math.round(buckets["21km"]), fill: "var(--color-range-21km)" },
-    { range: "21-42km", distance: Math.round(buckets["42km"]), fill: "var(--color-range-42km)" },
-    { range: "+42km", distance: Math.round(buckets["Ultra"]), fill: "var(--color-range-ultra)" },
-  ].filter((item) => item.distance > 0);
+    { range: "Até 3km", count: buckets["3km"], fill: "var(--color-range-3km)" },
+    { range: "3,1 - 5km", count: buckets["5km"], fill: "var(--color-range-5km)" },
+    { range: "5,1 - 10km", count: buckets["10km"], fill: "var(--color-range-10km)" },
+    { range: "10,1 - 21km", count: buckets["21km"], fill: "var(--color-range-21km)" },
+    { range: "21,1 - 42km", count: buckets["42km"], fill: "var(--color-range-42km)" },
+    { range: "+42km", count: buckets["Ultra"], fill: "var(--color-range-ultra)" },
+  ].filter((item) => item.count > 0);
 
   const pieConfig = {
-    distance: {
-      label: "Distância Total",
+    count: {
+      label: "Total de Atividades",
     },
     "range-3km": {
       label: "Até 3km",
       color: "var(--chart-1)",
     },
     "range-5km": {
-      label: "3-5km",
+      label: "3,1 - 5km",
       color: "var(--chart-2)",
     },
     "range-10km": {
-      label: "5-10km",
+      label: "5,1 - 10km",
       color: "var(--chart-3)",
     },
     "range-21km": {
-      label: "10-21km",
+      label: "10,1 - 21km",
       color: "var(--chart-4)",
     },
     "range-42km": {
-      label: "21-42km",
+      label: "21,1 - 42km",
       color: "var(--chart-5)",
     },
     "range-ultra": {
@@ -147,8 +147,8 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
     },
   } satisfies ChartConfig;
 
-  const totalDistance = React.useMemo(() => {
-    return pieData.reduce((acc, curr) => acc + curr.distance, 0);
+  const totalActivities = React.useMemo(() => {
+    return pieData.reduce((acc, curr) => acc + curr.count, 0);
   }, [pieData]);
 
   const maxMonthIndex = monthlyDistance.reduce(
@@ -225,7 +225,7 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
         <Card className="flex flex-col">
           <CardHeader className="items-center pb-0">
             <CardTitle>Distribuição por Distância</CardTitle>
-            <CardDescription>Km totais divididos por tipo de treino</CardDescription>
+            <CardDescription>Quantidade de treinos por faixa de distância</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
             <ChartContainer config={pieConfig} className="mx-auto aspect-square max-h-[250px]">
@@ -233,12 +233,12 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
                 <ChartTooltip
                   cursor={false}
                   content={
-                    <ChartTooltipContent hideLabel valueFormatter={(value) => `${value}km`} />
+                    <ChartTooltipContent hideLabel valueFormatter={(value) => `${value} treinos`} />
                   }
                 />
                 <Pie
                   data={pieData}
-                  dataKey="distance"
+                  dataKey="count"
                   nameKey="range"
                   innerRadius={60}
                   strokeWidth={5}
@@ -258,14 +258,14 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
                               y={viewBox.cy}
                               className="fill-foreground text-3xl font-bold"
                             >
-                              {totalDistance.toLocaleString()}
+                              {totalActivities.toLocaleString()}
                             </tspan>
                             <tspan
                               x={viewBox.cx}
                               y={(viewBox.cy || 0) + 24}
                               className="fill-muted-foreground"
                             >
-                              Km Totais
+                              Atividades
                             </tspan>
                           </text>
                         );
@@ -278,7 +278,7 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
           </CardContent>
           <CardFooter className="flex-col gap-2 text-sm">
             <div className="flex items-center gap-2 leading-none font-medium">
-              Análise de volume por distância
+              Análise de quantidade por distância
             </div>
           </CardFooter>
         </Card>
