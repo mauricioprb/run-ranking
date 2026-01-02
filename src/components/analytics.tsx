@@ -82,7 +82,7 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
 
   const radarConfig = {
     distance: {
-      label: "Distância (km)",
+      label: "Distância",
       color: "var(--chart-1)",
     },
   } satisfies ChartConfig;
@@ -196,7 +196,10 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
           <CardContent className="pb-0">
             <ChartContainer config={radarConfig} className="mx-auto aspect-square max-h-[250px]">
               <RadarChart data={radarData} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
-                <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent valueFormatter={(value) => `${value}km`} />}
+                />
                 <PolarAngleAxis dataKey="month" />
                 <PolarGrid />
                 <Radar
@@ -227,7 +230,12 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
           <CardContent className="flex-1 pb-0">
             <ChartContainer config={pieConfig} className="mx-auto aspect-square max-h-[250px]">
               <PieChart>
-                <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                <ChartTooltip
+                  cursor={false}
+                  content={
+                    <ChartTooltipContent hideLabel valueFormatter={(value) => `${value}km`} />
+                  }
+                />
                 <Pie
                   data={pieData}
                   dataKey="distance"
@@ -296,7 +304,12 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
               </defs>
               <CartesianGrid vertical={false} />
               <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-              <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+              <ChartTooltip
+                cursor={false}
+                content={
+                  <ChartTooltipContent indicator="dot" valueFormatter={(value) => `${value}km`} />
+                }
+              />
               {top3.map((_, i) => (
                 <Area
                   key={i}

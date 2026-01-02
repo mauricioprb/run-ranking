@@ -82,7 +82,7 @@ export async function RankingList({
                 </div>
               </TableCell>
               <TableCell className="text-right font-bold text-sm sm:text-base p-2 sm:p-4 whitespace-nowrap">
-                {atleta.distanciaTotalKm.toFixed(1)} km
+                {atleta.distanciaTotalKm.toFixed(1)}km
               </TableCell>
             </TableRow>
           );
