@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Medal, Crown } from "lucide-react";
+import { Medal, Crown } from "lucide-react";
 
 type Atividade = {
   distancia: number;
@@ -56,7 +56,7 @@ export async function RankingList({ year }: { year: number }) {
       const distanciaTotalMetros = corredor.atividades.reduce((acc, curr) => {
         const dataAtividade = new Date(curr.data_inicio);
         const anoAtividade = dataAtividade.getUTCFullYear();
-        
+
         if (anoAtividade === year) {
           return acc + curr.distancia;
         }
@@ -88,37 +88,26 @@ export async function RankingList({ year }: { year: number }) {
           let iconePosicao = null;
 
           if (posicao === 1) iconePosicao = <Crown className="h-5 w-5 text-yellow-500" />;
-          else if (posicao === 2)
-            iconePosicao = <Medal className="h-5 w-5 text-gray-400" />;
-          else if (posicao === 3)
-            iconePosicao = <Medal className="h-5 w-5 text-amber-700" />;
+          else if (posicao === 2) iconePosicao = <Medal className="h-5 w-5 text-gray-400" />;
+          else if (posicao === 3) iconePosicao = <Medal className="h-5 w-5 text-amber-700" />;
 
           return (
             <TableRow key={atleta.strava_id}>
               <TableCell className="text-center font-medium p-2 sm:p-4">
                 <div className="flex justify-center">
-                  {iconePosicao || (
-                    <span className="text-muted-foreground">#{posicao}</span>
-                  )}
+                  {iconePosicao || <span className="text-muted-foreground">#{posicao}</span>}
                 </div>
               </TableCell>
               <TableCell className="p-2 sm:p-4">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
                     <AvatarImage src={atleta.url_avatar || ""} alt={atleta.nome} />
-                    <AvatarFallback>
-                      {atleta.nome.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
+                    <AvatarFallback>{atleta.nome.substring(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col min-w-0">
-                    <span className="font-medium text-sm sm:text-base truncate">
-                      {atleta.nome}
-                    </span>
+                    <span className="font-medium text-sm sm:text-base truncate">{atleta.nome}</span>
                     {posicao <= 3 && (
-                      <Badge
-                        variant="secondary"
-                        className="w-fit text-[10px] px-1 py-0 h-5"
-                      >
+                      <Badge variant="secondary" className="w-fit text-[10px] px-1 py-0 h-5">
                         Top {posicao}
                       </Badge>
                     )}

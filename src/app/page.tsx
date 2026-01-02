@@ -8,11 +8,7 @@ import { RankingList } from "@/components/ranking-list";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ year?: string }>;
-}) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ year?: string }> }) {
   const params = await searchParams;
   const yearParam = params.year;
   const anoSelecionado = yearParam ? parseInt(yearParam) : new Date().getFullYear();

@@ -69,7 +69,7 @@ export class StravaGateway {
   async buscarAtividades(tokenAcesso: string, apos: number): Promise<AtividadeStrava[]> {
     let pagina = 1;
     let todasAtividades: AtividadeStrava[] = [];
-    
+
     while (true) {
       const url = `${this.baseUrl}/athlete/activities?after=${apos}&per_page=200&page=${pagina}`;
       const resposta = await fetch(url, {
