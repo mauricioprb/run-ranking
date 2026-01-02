@@ -13,39 +13,48 @@ export class ServicoAutenticacao {
     const dadosToken = await this.stravaGateway.trocarCodigoPorToken(codigo);
     const { athlete, access_token, refresh_token, expires_at } = dadosToken;
 
-    const supabase = await criarClienteSupabase();
+    const supabaseAdmin = this.criarClienteAdmin();
 
-    const { data: corredorExistente, error: erroBusca } = await supabase
+    // Verifica se o corredor já existe
+    const { data: corredorExistente } = await supabaseAdmin
       .from("corredores")
       .select("strava_id")
       .eq("strava_id", athlete.id)
       .single();
 
-    if (erroBusca && erroBusca.code !== "PGRST116") {
-      throw new Error(`Erro ao verificar corredor: ${erroBusca.message}`);
-    }
+    if (corredorExistente) {
+      // Se já existe, atualiza tokens e perfil, mantendo o status 'esta_ativo' atual
+      const { error: erroUpdate } = await supabaseAdmin
+        .from("corredores")
+        .update({
+          nome: `${athlete.firstname} ${athlete.lastname}`,
+          url_avatar: athlete.profile,
+          token_acesso: access_token,
+          token_atualizacao: refresh_token,
+          expira_em: expires_at,
+        })
+        .eq("strava_id", athlete.id);
 
-    if (!corredorExistente) {
-      throw new Error(
-        "Acesso negado: Você não está cadastrado no sistema. Solicite um convite ao administrador.",
-      );
-    }
+      if (erroUpdate) {
+        throw new Error(`Erro ao atualizar corredor: ${erroUpdate.message}`);
+      }
+    } else {
+      // Se é novo, cria como INATIVO (aguardando aprovação)
+      const { error: erroInsert } = await supabaseAdmin
+        .from("corredores")
+        .insert({
+          strava_id: athlete.id,
+          nome: `${athlete.firstname} ${athlete.lastname}`,
+          url_avatar: athlete.profile,
+          token_acesso: access_token,
+          token_atualizacao: refresh_token,
+          expira_em: expires_at,
+          esta_ativo: false, // Precisa de aprovação manual
+        });
 
-    const supabaseAdmin = this.criarClienteAdmin();
-
-    const { error: erroAtualizacao } = await supabaseAdmin
-      .from("corredores")
-      .update({
-        token_acesso: access_token,
-        token_atualizacao: refresh_token,
-        expira_em: expires_at,
-        nome: `${athlete.firstname} ${athlete.lastname}`,
-        url_avatar: athlete.profile,
-      })
-      .eq("strava_id", athlete.id);
-
-    if (erroAtualizacao) {
-      throw new Error(`Erro ao atualizar credenciais: ${erroAtualizacao.message}`);
+      if (erroInsert) {
+        throw new Error(`Erro ao cadastrar corredor: ${erroInsert.message}`);
+      }
     }
 
     return { sucesso: true, corredor: athlete };
