@@ -97,4 +97,25 @@ export class StravaGateway {
 
     return todasAtividades;
   }
+
+  async buscarAtividade(tokenAcesso: string, id: number): Promise<AtividadeStrava> {
+    const url = `${this.baseUrl}/activities/${id}`;
+    const resposta = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${tokenAcesso}`,
+      },
+      cache: "no-store",
+    });
+
+    if (!resposta.ok) {
+      if (resposta.status === 404) {
+        throw new Error("Atividade não encontrada");
+      }
+      const erro = await resposta.text();
+      throw new Error(`Falha ao buscar atividade no Strava: ${erro}`);
+    }
+
+    const dados = await resposta.json();
+    return SchemaAtividadeStrava.parse(dados);
+  }
 }

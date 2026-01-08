@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     const resultado = await authService.loginComStrava(code);
 
     const syncService = new ServicoSincronizacao();
-    syncService.sincronizarCorredor({ strava_id: resultado.corredor.id }).catch(console.error);
+    await syncService.sincronizarCorredor({ strava_id: resultado.corredor.id });
 
     return NextResponse.redirect(new URL(`/?success=true&new=${resultado.isNewUser}`, request.url));
   } catch (err: any) {
