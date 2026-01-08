@@ -22,6 +22,9 @@ export function DateRangeFilter({ className }: { className?: string }) {
   const startDateParam = searchParams.get("startDate");
   const endDateParam = searchParams.get("endDate");
 
+  // Track previous year to avoid resetting filter when updating the date selection
+  const prevYearRef = React.useRef(currentYear);
+
   const [date, setDate] = React.useState<DateRange | undefined>(() => {
     if (startDateParam && endDateParam) {
       return {
@@ -32,14 +35,16 @@ export function DateRangeFilter({ className }: { className?: string }) {
     return undefined;
   });
 
-  // Reset date filter when year changes if the dates are not in the selected year
   React.useEffect(() => {
-    if (date?.from && date.from.getFullYear() !== currentYear) {
-      setDate(undefined);
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("startDate");
-      params.delete("endDate");
-      router.push(`/?${params.toString()}`);
+    if (prevYearRef.current !== currentYear) {
+      prevYearRef.current = currentYear;
+      if (date?.from && date.from.getFullYear() !== currentYear) {
+        setDate(undefined);
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete("startDate");
+        params.delete("endDate");
+        router.push(`/?${params.toString()}`);
+      }
     }
   }, [currentYear, date, router, searchParams]);
 
@@ -50,6 +55,11 @@ export function DateRangeFilter({ className }: { className?: string }) {
       const params = new URLSearchParams(searchParams.toString());
       params.set("startDate", newDate.from.toISOString());
       params.set("endDate", newDate.to.toISOString());
+
+      if (newDate.from.getFullYear() !== currentYear) {
+        params.set("year", newDate.from.getFullYear().toString());
+      }
+
       router.push(`/?${params.toString()}`);
     } else if (!newDate) {
       const params = new URLSearchParams(searchParams.toString());

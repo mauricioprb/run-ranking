@@ -158,7 +158,7 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
 
   const top3 = ranking.slice(0, 3);
   const areaChartData = months.map((month, index) => {
-    const dataPoint: any = { month };
+    const dataPoint: Record<string, string | number> = { month };
     top3.forEach((runner, i) => {
       const runnerKey = `runner${i}`;
       let monthlyDist = 0;
@@ -194,7 +194,7 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
             <CardDescription>Total de km percorridos por mês (Todos os atletas)</CardDescription>
           </CardHeader>
           <CardContent className="pb-0">
-            <ChartContainer config={radarConfig} className="mx-auto aspect-square max-h-[250px]">
+            <ChartContainer config={radarConfig} className="mx-auto aspect-square max-h-62.5">
               <RadarChart data={radarData} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                 <ChartTooltip
                   cursor={false}
@@ -228,7 +228,7 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
             <CardDescription>Quantidade de treinos por faixa de distância</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
-            <ChartContainer config={pieConfig} className="mx-auto aspect-square max-h-[250px]">
+            <ChartContainer config={pieConfig} className="mx-auto aspect-square max-h-62.5">
               <PieChart>
                 <ChartTooltip
                   cursor={false}
@@ -292,7 +292,7 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={areaChartConfig} className="aspect-auto h-[250px] w-full">
+          <ChartContainer config={areaChartConfig} className="aspect-auto h-62.5 w-full">
             <AreaChart data={areaChartData}>
               <defs>
                 {top3.map((_, i) => (

@@ -70,8 +70,7 @@ export class ServicoSincronizacao {
       const tokenAcesso = await this.authService.garantirTokenValido(corredor.strava_id);
 
       const agora = new Date();
-      // Busca atividades dos últimos 2 anos para garantir histórico
-      const inicioDoAno = new Date(agora.getFullYear() - 2, 0, 1);
+      const inicioDoAno = new Date(agora.getFullYear() - 5, 0, 1);
       const timestampInicioAno = Math.floor(inicioDoAno.getTime() / 1000);
 
       const atividades = await this.stravaGateway.buscarAtividades(tokenAcesso, timestampInicioAno);

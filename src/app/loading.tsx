@@ -5,7 +5,6 @@ export default function Loading() {
   return (
     <main className="min-h-screen bg-background p-4 md:p-8">
       <div className="mx-auto max-w-4xl space-y-8">
-        {/* Header Section */}
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div className="flex items-center gap-3">
             <Skeleton className="h-12 w-12 rounded-full" />
@@ -22,7 +21,6 @@ export default function Loading() {
           </div>
         </div>
 
-        {/* Ranking Table Section */}
         <Card>
           <CardHeader>
             <Skeleton className="h-6 w-48 mb-2" />
@@ -30,14 +28,12 @@ export default function Loading() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {/* Table Header */}
               <div className="flex justify-between border-b pb-2">
                 <Skeleton className="h-4 w-12" />
                 <Skeleton className="h-4 w-32" />
                 <Skeleton className="h-4 w-24" />
               </div>
 
-              {/* Table Rows */}
               {Array.from({ length: 8 }).map((_, i) => (
                 <div
                   key={i}

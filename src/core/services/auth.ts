@@ -1,5 +1,4 @@
 import { StravaGateway } from "@/infra/strava/gateway";
-import { criarClienteSupabase } from "@/infra/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 
 export class ServicoAutenticacao {
@@ -15,7 +14,6 @@ export class ServicoAutenticacao {
 
     const supabaseAdmin = this.criarClienteAdmin();
 
-    // Verifica se o corredor já existe
     const { data: corredorExistente } = await supabaseAdmin
       .from("corredores")
       .select("strava_id")
@@ -23,7 +21,6 @@ export class ServicoAutenticacao {
       .single();
 
     if (corredorExistente) {
-      // Se já existe, atualiza tokens e perfil, mantendo o status 'esta_ativo' atual
       const { error: erroUpdate } = await supabaseAdmin
         .from("corredores")
         .update({
@@ -39,7 +36,6 @@ export class ServicoAutenticacao {
         throw new Error(`Erro ao atualizar corredor: ${erroUpdate.message}`);
       }
     } else {
-      // Se é novo, cria como INATIVO (aguardando aprovação)
       const { error: erroInsert } = await supabaseAdmin.from("corredores").insert({
         strava_id: athlete.id,
         nome: `${athlete.firstname} ${athlete.lastname}`,
@@ -47,7 +43,7 @@ export class ServicoAutenticacao {
         token_acesso: access_token,
         token_atualizacao: refresh_token,
         expira_em: expires_at,
-        esta_ativo: false, // Precisa de aprovação manual
+        esta_ativo: false,
       });
 
       if (erroInsert) {
