@@ -77,28 +77,27 @@ export async function getRankingData(
 
       atividadesFiltradas.forEach((atividade) => {
         if (!atividade.tempo || atividade.distancia < 100) return; // Ignora distancias muito curtas (< 100m) ou sem tempo
-        
+
         const paceSegundosPorKm = atividade.tempo / (atividade.distancia / 1000);
-        
+
         if (paceSegundosPorKm < melhorPaceSegundos) {
           melhorPaceSegundos = paceSegundosPorKm;
         }
       });
-      
+
       if (melhorPaceSegundos === Infinity) melhorPaceSegundos = 0;
 
       const minutos = Math.floor(melhorPaceSegundos / 60);
       const segundos = Math.floor(melhorPaceSegundos % 60);
-      const melhorPace = melhorPaceSegundos > 0 
-        ? `${minutos}'${segundos.toString().padStart(2, "0")}"` 
-        : "-";
+      const melhorPace =
+        melhorPaceSegundos > 0 ? `${minutos}'${segundos.toString().padStart(2, "0")}"` : "-";
 
       return {
         ...corredor,
         atividades: atividadesFiltradas,
         distanciaTotalKm: distanciaTotalMetros / 1000,
         melhorPace,
-        melhorPaceSegundos
+        melhorPaceSegundos,
       };
     })
     .sort((a, b) => b.distanciaTotalKm - a.distanciaTotalKm);
