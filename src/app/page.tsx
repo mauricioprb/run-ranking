@@ -8,6 +8,7 @@ import Link from "next/link";
 import { RankingList } from "@/components/ranking-list";
 import { Analytics } from "@/components/analytics";
 import { getRankingData } from "@/lib/data";
+import { ToastHandler } from "@/components/toast-handler";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,7 @@ export default async function Home({
 
   return (
     <main className="min-h-screen bg-background p-4 md:p-8">
+      <ToastHandler />
       <div className="mx-auto max-w-4xl space-y-8">
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div className="flex items-center gap-3">

@@ -85,6 +85,7 @@ export class ServicoSincronizacao {
         id: a.id,
         corredor_id: corredor.strava_id,
         distancia: a.distance,
+        tempo: a.moving_time,
         data_inicio: a.start_date,
         tipo: a.type,
       }));

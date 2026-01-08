@@ -51,7 +51,7 @@ export class ServicoAutenticacao {
       }
     }
 
-    return { sucesso: true, corredor: athlete };
+    return { sucesso: true, corredor: athlete, isNewUser: !corredorExistente };
   }
 
   async garantirTokenValido(stravaId: number) {

@@ -19,12 +19,10 @@ export async function GET(request: Request) {
     const authService = new ServicoAutenticacao();
     const resultado = await authService.loginComStrava(code);
 
-    // Sincroniza as atividades imediatamente após o login
     const syncService = new ServicoSincronizacao();
-    // Executa em background para não travar o redirect
     syncService.sincronizarCorredor({ strava_id: resultado.corredor.id }).catch(console.error);
 
-    return NextResponse.redirect(new URL("/?success=true", request.url));
+    return NextResponse.redirect(new URL(`/?success=true&new=${resultado.isNewUser}`, request.url));
   } catch (err: any) {
     console.error("Erro no callback de auth:", err);
     const message = err instanceof Error ? err.message : "Erro desconhecido";

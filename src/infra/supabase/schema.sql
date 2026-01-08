@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS atividades (
   id BIGINT PRIMARY KEY,
   corredor_id BIGINT REFERENCES corredores(strava_id) ON DELETE CASCADE,
   distancia FLOAT NOT NULL,
+  tempo INTEGER,
   data_inicio TIMESTAMPTZ NOT NULL,
   tipo TEXT NOT NULL
 );

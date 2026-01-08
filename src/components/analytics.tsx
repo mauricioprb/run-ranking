@@ -26,10 +26,10 @@ import {
 } from "@/components/ui/card";
 import {
   ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
 import { RankingItem } from "@/lib/data";
@@ -175,9 +175,14 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
 
   const areaChartConfig: ChartConfig = {};
   top3.forEach((runner, i) => {
+    let color = `var(--chart-${i + 1})`;
+    if (i === 0) color = "#EAB308";
+    else if (i === 1) color = "#94A3B8";
+    else if (i === 2) color = "#D97706";
+
     areaChartConfig[`runner${i}`] = {
       label: runner.nome.split(" ")[0],
-      color: `var(--chart-${i + 1})`,
+      color: color,
     };
   });
 
@@ -191,7 +196,7 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
         <Card>
           <CardHeader className="items-center pb-4">
             <CardTitle>Volume Mensal</CardTitle>
-            <CardDescription>Total de km percorridos por mês (Todos os atletas)</CardDescription>
+            <CardDescription>Total de km percorridos por mês</CardDescription>
           </CardHeader>
           <CardContent className="pb-0">
             <ChartContainer config={radarConfig} className="mx-auto aspect-square max-h-62.5">

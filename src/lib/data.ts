@@ -2,6 +2,7 @@ import { criarClienteSupabase } from "@/infra/supabase/server";
 
 export type Atividade = {
   distancia: number;
+  tempo: number;
   data_inicio: string;
 };
 
@@ -14,6 +15,8 @@ export type Corredor = {
 
 export type RankingItem = Corredor & {
   distanciaTotalKm: number;
+  melhorPace: string; // "MM:SS"
+  melhorPaceSegundos: number;
 };
 
 export async function getRankingData(
@@ -32,6 +35,7 @@ export async function getRankingData(
       url_avatar,
       atividades (
         distancia,
+        tempo,
         data_inicio
       )
     `,
@@ -68,10 +72,33 @@ export async function getRankingData(
         return acc + curr.distancia;
       }, 0);
 
+      // Calcular melhor pace
+      let melhorPaceSegundos = Infinity;
+
+      atividadesFiltradas.forEach((atividade) => {
+        if (!atividade.tempo || atividade.distancia < 100) return; // Ignora distancias muito curtas (< 100m) ou sem tempo
+        
+        const paceSegundosPorKm = atividade.tempo / (atividade.distancia / 1000);
+        
+        if (paceSegundosPorKm < melhorPaceSegundos) {
+          melhorPaceSegundos = paceSegundosPorKm;
+        }
+      });
+      
+      if (melhorPaceSegundos === Infinity) melhorPaceSegundos = 0;
+
+      const minutos = Math.floor(melhorPaceSegundos / 60);
+      const segundos = Math.floor(melhorPaceSegundos % 60);
+      const melhorPace = melhorPaceSegundos > 0 
+        ? `${minutos}'${segundos.toString().padStart(2, "0")}"` 
+        : "-";
+
       return {
         ...corredor,
         atividades: atividadesFiltradas,
         distanciaTotalKm: distanciaTotalMetros / 1000,
+        melhorPace,
+        melhorPaceSegundos
       };
     })
     .sort((a, b) => b.distanciaTotalKm - a.distanciaTotalKm);
