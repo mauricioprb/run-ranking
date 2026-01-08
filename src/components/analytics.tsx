@@ -317,7 +317,6 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
                   type="natural"
                   fill={`url(#fillRunner${i})`}
                   stroke={`var(--color-runner${i})`}
-                  stackId="a"
                 />
               ))}
               <ChartLegend content={<ChartLegendContent />} />
