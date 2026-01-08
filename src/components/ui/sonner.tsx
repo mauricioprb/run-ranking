@@ -12,13 +12,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
+      position="top-center"
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg data-[type=error]:bg-destructive data-[type=error]:text-destructive-foreground data-[type=error]:border-destructive data-[type=success]:bg-[#22c55e] data-[type=success]:text-white data-[type=success]:border-[#22c55e]",
-          description: "group-[.toast]:text-muted-foreground",
-          actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
-          cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
+            "group toast group-[.toaster]:!bg-background group-[.toaster]:!text-white group-[.toaster]:!border-border group-[.toaster]:!shadow-lg data-[type=error]:!bg-destructive data-[type=error]:!text-destructive-foreground data-[type=error]:!border-destructive data-[type=success]:!bg-green-600 data-[type=success]:!text-white data-[type=success]:!border-green-700 font-bold",
+          description: "group-[.toast]:!text-white",
+          actionButton: "group-[.toast]:!bg-green-200 group-[.toast]:!text-white",
+          cancelButton: "group-[.toast]:!bg-green-200 group-[.toast]:!text-white",
         },
       }}
       {...props}

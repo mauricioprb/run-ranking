@@ -168,7 +168,7 @@ export function Analytics({ ranking }: { ranking: RankingItem[] }) {
           monthlyDist += activity.distancia / 1000;
         }
       });
-      dataPoint[runnerKey] = Math.round(monthlyDist);
+      dataPoint[runnerKey] = Number(monthlyDist.toFixed(2));
     });
     return dataPoint;
   });
