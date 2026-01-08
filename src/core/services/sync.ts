@@ -77,6 +77,28 @@ export class ServicoSincronizacao {
 
       const corridas = atividades.filter((a) => a.type === "Run");
 
+      if (corridas) {
+        const { data: atividadesLocais } = await this.supabaseAdmin
+          .from("atividades")
+          .select("id")
+          .eq("corredor_id", corredor.strava_id)
+          .gte("data_inicio", inicioDoAno.toISOString());
+
+        if (atividadesLocais) {
+          const idsStrava = new Set(corridas.map((c) => c.id));
+          const idsParaRemover = atividadesLocais
+            .map((a) => a.id)
+            .filter((id) => !idsStrava.has(id));
+
+          if (idsParaRemover.length > 0) {
+            console.log(
+              `Removendo ${idsParaRemover.length} atividades excluídas para o corredor ${corredor.strava_id}`,
+            );
+            await this.supabaseAdmin.from("atividades").delete().in("id", idsParaRemover);
+          }
+        }
+      }
+
       if (corridas.length === 0) {
         return;
       }
