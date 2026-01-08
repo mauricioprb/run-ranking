@@ -126,7 +126,6 @@ export class ServicoSincronizacao {
   async processarEventoWebhook(evento: any) {
     console.log("Processando evento webhook:", evento);
 
-    // Ignorar eventos que não sejam de atividades
     if (evento.object_type !== "activity") {
       return;
     }
@@ -139,7 +138,6 @@ export class ServicoSincronizacao {
         await this.supabaseAdmin.from("atividades").delete().eq("id", activityId);
         console.log(`Atividade ${activityId} removida via webhook`);
       } else if (evento.aspect_type === "create" || evento.aspect_type === "update") {
-        // Para create/update, buscamos os detalhes atualizados no Strava
         await this.sincronizarAtividadeUnica(runnerId, activityId);
       }
     } catch (error) {
@@ -171,7 +169,6 @@ export class ServicoSincronizacao {
       console.log(`Atividade ${activityId} sincronizada com sucesso via webhook`);
     } catch (error) {
       if (error instanceof Error && error.message === "Atividade não encontrada") {
-        // Pode ter sido deletada logo após criar/alterar, ou privacidade mudou
         console.warn(`Atividade ${activityId} não encontrada no Strava. Ignorando.`);
         return;
       }

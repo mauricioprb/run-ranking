@@ -17,11 +17,7 @@ export async function criarClienteSupabase() {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options),
             );
-          } catch {
-            // O método `setAll` foi chamado de um Server Component.
-            // Isso pode ser ignorado se você tiver middleware atualizando
-            // sessões de usuário.
-          }
+          } catch {}
         },
       },
     },

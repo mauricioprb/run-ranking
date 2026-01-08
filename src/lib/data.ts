@@ -72,11 +72,10 @@ export async function getRankingData(
         return acc + curr.distancia;
       }, 0);
 
-      // Calcular melhor pace
       let melhorPaceSegundos = Infinity;
 
       atividadesFiltradas.forEach((atividade) => {
-        if (!atividade.tempo || atividade.distancia < 100) return; // Ignora distancias muito curtas (< 100m) ou sem tempo
+        if (!atividade.tempo || atividade.distancia < 100) return;
 
         const paceSegundosPorKm = atividade.tempo / (atividade.distancia / 1000);
 

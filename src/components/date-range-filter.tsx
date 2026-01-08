@@ -22,7 +22,6 @@ export function DateRangeFilter({ className }: { className?: string }) {
   const startDateParam = searchParams.get("startDate");
   const endDateParam = searchParams.get("endDate");
 
-  // Track previous year to avoid resetting filter when updating the date selection
   const prevYearRef = React.useRef(currentYear);
 
   const [date, setDate] = React.useState<DateRange | undefined>(() => {
