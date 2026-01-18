@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
 import { YearSelect } from "@/components/year-select";
 import { DateRangeFilter } from "@/components/date-range-filter";
+import { WeeklyLimitFilter } from "@/components/weekly-limit-filter";
 import { Trophy } from "lucide-react";
 import Link from "next/link";
 import { RankingList } from "@/components/ranking-list";
@@ -15,15 +16,16 @@ export const dynamic = "force-dynamic";
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ year?: string; startDate?: string; endDate?: string }>;
+  searchParams: Promise<{ year?: string; startDate?: string; endDate?: string; limited?: string }>;
 }) {
   const params = await searchParams;
   const yearParam = params.year;
   const anoSelecionado = yearParam ? parseInt(yearParam) : new Date().getFullYear();
   const startDate = params.startDate;
   const endDate = params.endDate;
+  const limited = params.limited === "true";
 
-  const ranking = await getRankingData(anoSelecionado, startDate, endDate);
+  const ranking = await getRankingData(anoSelecionado, startDate, endDate, limited);
 
   return (
     <main className="min-h-screen bg-background p-4 md:p-8">
@@ -78,12 +80,18 @@ export default async function Home({
               <CardDescription>Ordenado pela distância total percorrida.</CardDescription>
             </div>
             <div className="flex flex-col gap-2 w-full md:w-auto md:flex-row md:items-center">
+              <WeeklyLimitFilter />
               <DateRangeFilter className="w-full md:w-65" />
               <YearSelect currentYear={anoSelecionado} className="w-full md:w-auto" />
             </div>
           </CardHeader>
           <CardContent>
-            <RankingList year={anoSelecionado} startDate={startDate} endDate={endDate} />
+            <RankingList
+              year={anoSelecionado}
+              startDate={startDate}
+              endDate={endDate}
+              limited={limited}
+            />
           </CardContent>
         </Card>
 

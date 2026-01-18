@@ -16,12 +16,14 @@ export async function RankingList({
   year,
   startDate,
   endDate,
+  limited,
 }: {
   year: number;
   startDate?: string;
   endDate?: string;
+  limited?: boolean;
 }) {
-  const ranking = await getRankingData(year, startDate, endDate);
+  const ranking = await getRankingData(year, startDate, endDate, limited);
 
   return (
     <Table>

@@ -1,4 +1,5 @@
 import { criarClienteSupabase } from "@/infra/supabase/server";
+import { getISOWeek, getISOWeekYear } from "date-fns";
 
 export type Atividade = {
   distancia: number;
@@ -23,6 +24,7 @@ export async function getRankingData(
   year: number,
   startDate?: string,
   endDate?: string,
+  limitActivities: boolean = false,
 ): Promise<RankingItem[]> {
   const supabase = await criarClienteSupabase();
 
@@ -57,7 +59,36 @@ export async function getRankingData(
 
   const ranking = (corredoresRaw as unknown as Corredor[])
     .map((corredor) => {
-      const atividadesFiltradas = corredor.atividades.filter((curr) => {
+      let activitiesToFilter = corredor.atividades;
+
+      if (limitActivities) {
+        const activitiesByWeek = new Map<string, Atividade[]>();
+
+        activitiesToFilter.forEach((activity) => {
+          const date = new Date(activity.data_inicio);
+          const activityYear = getISOWeekYear(date);
+          const activityWeek = getISOWeek(date);
+          const key = `${activityYear}-${activityWeek}`;
+
+          if (!activitiesByWeek.has(key)) {
+            activitiesByWeek.set(key, []);
+          }
+          activitiesByWeek.get(key)!.push(activity);
+        });
+
+        const limitedActivities: Atividade[] = [];
+        activitiesByWeek.forEach((activities) => {
+          if (activities.length <= 3) {
+            limitedActivities.push(...activities);
+          } else {
+            const shuffled = [...activities].sort(() => 0.5 - Math.random());
+            limitedActivities.push(...shuffled.slice(0, 3));
+          }
+        });
+        activitiesToFilter = limitedActivities;
+      }
+
+      const atividadesFiltradas = activitiesToFilter.filter((curr) => {
         const dataAtividade = new Date(curr.data_inicio);
 
         if (start && end) {
