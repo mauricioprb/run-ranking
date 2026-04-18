@@ -1,4 +1,15 @@
 services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/run_ranking
+    depends_on:
+      - db
+    restart: unless-stopped
+
   db:
     image: postgres:17-alpine
     environment:
@@ -10,6 +21,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./src/infra/db/migrations/0001_initial.sql:/docker-entrypoint-initdb.d/01-init.sql
+    restart: unless-stopped
 
 volumes:
   pgdata:
