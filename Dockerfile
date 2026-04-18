@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-RUN npm run build
+RUN SKIP_ENV_VALIDATION=true npm run build
 
 FROM node:22-alpine AS runner
 WORKDIR /app
