@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-typecheck-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+          STRAVA_CLIENT_ID: "dummy"
+          STRAVA_CLIENT_SECRET: "dummy"
+          STRAVA_VERIFY_TOKEN: "dummy"
+          CRON_SECRET: "dummy"
+          NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+          TOKEN_ENCRYPTION_KEY: "0000000000000000000000000000000000000000000000000000000000000000"
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Scan for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: [lint-typecheck-build]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: run-ranking:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
+            STRAVA_CLIENT_ID=dummy
+            STRAVA_CLIENT_SECRET=dummy
+            STRAVA_VERIFY_TOKEN=dummy
+            CRON_SECRET=dummy
+            NEXT_PUBLIC_APP_URL=http://localhost:3000
+            TOKEN_ENCRYPTION_KEY=0000000000000000000000000000000000000000000000000000000000000000

@@ -1,5 +1,7 @@
 import { SchemaRespostaTokenStrava, type RespostaTokenStrava } from "@/core/domain/runner";
 import { SchemaAtividadeStrava, type AtividadeStrava } from "@/core/domain/activity";
+import { AtividadeNaoEncontradaError, StravaApiError } from "@/core/errors";
+import { env } from "@/lib/env";
 import { z } from "zod";
 
 export class StravaGateway {
@@ -9,14 +11,8 @@ export class StravaGateway {
   private readonly oauthUrl = "https://www.strava.com/oauth/token";
 
   constructor() {
-    this.clientId = process.env.STRAVA_CLIENT_ID!;
-    this.clientSecret = process.env.STRAVA_CLIENT_SECRET!;
-
-    if (!this.clientId || !this.clientSecret) {
-      throw new Error(
-        "Credenciais do Strava não configuradas (STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET)",
-      );
-    }
+    this.clientId = env.STRAVA_CLIENT_ID;
+    this.clientSecret = env.STRAVA_CLIENT_SECRET;
   }
 
   async trocarCodigoPorToken(codigo: string): Promise<RespostaTokenStrava> {
@@ -35,7 +31,7 @@ export class StravaGateway {
 
     if (!resposta.ok) {
       const erro = await resposta.text();
-      throw new Error(`Falha ao trocar código por token no Strava: ${erro}`);
+      throw new StravaApiError(`Falha ao trocar código por token: ${erro}`, resposta.status);
     }
 
     const dados = await resposta.json();
@@ -58,12 +54,11 @@ export class StravaGateway {
 
     if (!resposta.ok) {
       const erro = await resposta.text();
-      throw new Error(`Falha ao atualizar token no Strava: ${erro}`);
+      throw new StravaApiError(`Falha ao atualizar token: ${erro}`, resposta.status);
     }
 
     const dados = await resposta.json();
-
-    return dados as RespostaTokenStrava;
+    return SchemaRespostaTokenStrava.parse(dados);
   }
 
   async buscarAtividades(tokenAcesso: string, apos: number): Promise<AtividadeStrava[]> {
@@ -73,23 +68,19 @@ export class StravaGateway {
     while (true) {
       const url = `${this.baseUrl}/athlete/activities?after=${apos}&per_page=200&page=${pagina}`;
       const resposta = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${tokenAcesso}`,
-        },
+        headers: { Authorization: `Bearer ${tokenAcesso}` },
         cache: "no-store",
       });
 
       if (!resposta.ok) {
         const erro = await resposta.text();
-        throw new Error(`Falha ao buscar atividades no Strava: ${erro}`);
+        throw new StravaApiError(`Falha ao buscar atividades: ${erro}`, resposta.status);
       }
 
       const dados = await resposta.json();
       const atividadesPagina = z.array(SchemaAtividadeStrava).parse(dados);
 
-      if (atividadesPagina.length === 0) {
-        break;
-      }
+      if (atividadesPagina.length === 0) break;
 
       todasAtividades = [...todasAtividades, ...atividadesPagina];
       pagina++;
@@ -101,18 +92,16 @@ export class StravaGateway {
   async buscarAtividade(tokenAcesso: string, id: number): Promise<AtividadeStrava> {
     const url = `${this.baseUrl}/activities/${id}`;
     const resposta = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${tokenAcesso}`,
-      },
+      headers: { Authorization: `Bearer ${tokenAcesso}` },
       cache: "no-store",
     });
 
     if (!resposta.ok) {
       if (resposta.status === 404) {
-        throw new Error("Atividade não encontrada");
+        throw new AtividadeNaoEncontradaError(id);
       }
       const erro = await resposta.text();
-      throw new Error(`Falha ao buscar atividade no Strava: ${erro}`);
+      throw new StravaApiError(`Falha ao buscar atividade: ${erro}`, resposta.status);
     }
 
     const dados = await resposta.json();

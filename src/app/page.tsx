@@ -8,7 +8,8 @@ import { Trophy } from "lucide-react";
 import Link from "next/link";
 import { RankingList } from "@/components/ranking-list";
 import { Analytics } from "@/components/analytics";
-import { getRankingData } from "@/lib/data";
+import { ServicoRanking } from "@/core/services/ranking";
+import { corredorRepository } from "@/infra/db/repositories";
 import { ToastHandler } from "@/components/toast-handler";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +26,8 @@ export default async function Home({
   const endDate = params.endDate;
   const limited = params.limited === "true";
 
-  const ranking = await getRankingData(anoSelecionado, startDate, endDate, limited);
+  const servicoRanking = new ServicoRanking(corredorRepository);
+  const ranking = await servicoRanking.getRankingData(anoSelecionado, startDate, endDate, limited);
 
   return (
     <main className="min-h-screen bg-background p-4 md:p-8">

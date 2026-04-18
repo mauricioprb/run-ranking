@@ -1,42 +1,21 @@
-import { ServicoAutenticacao } from "@/core/services/auth";
-import { StravaGateway } from "@/infra/strava/gateway";
-import { createClient } from "@supabase/supabase-js";
+import type { CorredorRepository } from "@/core/repositories/corredor.repository";
+import type { AtividadeRepository } from "@/core/repositories/atividade.repository";
+import type { ServicoAutenticacao } from "@/core/services/auth";
+import type { StravaGateway } from "@/infra/strava/gateway";
+import { AtividadeNaoEncontradaError } from "@/core/errors";
 
 export class ServicoSincronizacao {
-  private stravaGateway: StravaGateway;
-  private authService: ServicoAutenticacao;
-  private supabaseAdmin;
-
-  constructor() {
-    this.stravaGateway = new StravaGateway();
-    this.authService = new ServicoAutenticacao();
-
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-    if (!serviceKey) {
-      throw new Error("SUPABASE_SERVICE_ROLE_KEY não definida");
-    }
-
-    this.supabaseAdmin = createClient(url, serviceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
-  }
+  constructor(
+    private corredorRepo: CorredorRepository,
+    private atividadeRepo: AtividadeRepository,
+    private authService: ServicoAutenticacao,
+    private stravaGateway: StravaGateway,
+  ) {}
 
   async sincronizarTudo() {
-    const { data: corredores, error } = await this.supabaseAdmin
-      .from("corredores")
-      .select("*")
-      .eq("esta_ativo", true);
+    const corredores = await this.corredorRepo.listarAtivos();
 
-    if (error) {
-      throw new Error(`Erro ao buscar corredores: ${error.message}`);
-    }
-
-    if (!corredores || corredores.length === 0) {
+    if (corredores.length === 0) {
       return {
         mensagem: "Nenhum corredor ativo para sincronizar",
         total: 0,
@@ -74,28 +53,24 @@ export class ServicoSincronizacao {
       const timestampInicioAno = Math.floor(inicioDoAno.getTime() / 1000);
 
       const atividades = await this.stravaGateway.buscarAtividades(tokenAcesso, timestampInicioAno);
-
       const corridas = atividades.filter((a) => a.type === "Run");
 
       if (corridas) {
-        const { data: atividadesLocais } = await this.supabaseAdmin
-          .from("atividades")
-          .select("id")
-          .eq("corredor_id", corredor.strava_id)
-          .gte("data_inicio", inicioDoAno.toISOString());
+        const atividadesLocais = await this.atividadeRepo.listarPorCorredorDesde(
+          corredor.strava_id,
+          inicioDoAno.toISOString(),
+        );
 
-        if (atividadesLocais) {
-          const idsStrava = new Set(corridas.map((c) => String(c.id)));
-          const idsParaRemover = atividadesLocais
-            .map((a) => String(a.id))
-            .filter((id) => !idsStrava.has(id));
+        const idsStrava = new Set(corridas.map((c) => String(c.id)));
+        const idsParaRemover = atividadesLocais
+          .map((a) => String(a.id))
+          .filter((id) => !idsStrava.has(id));
 
-          if (idsParaRemover.length > 0) {
-            console.log(
-              `Removendo ${idsParaRemover.length} atividades excluídas para o corredor ${corredor.strava_id}`,
-            );
-            await this.supabaseAdmin.from("atividades").delete().in("id", idsParaRemover);
-          }
+        if (idsParaRemover.length > 0) {
+          console.log(
+            `Removendo ${idsParaRemover.length} atividades excluídas para o corredor ${corredor.strava_id}`,
+          );
+          await this.atividadeRepo.removerPorIds(idsParaRemover);
         }
       }
 
@@ -112,18 +87,19 @@ export class ServicoSincronizacao {
         tipo: a.type,
       }));
 
-      const { error } = await this.supabaseAdmin.from("atividades").upsert(dadosUpsert);
-
-      if (error) {
-        throw new Error(`Erro ao salvar atividades: ${error.message}`);
-      }
+      await this.atividadeRepo.upsert(dadosUpsert);
     } catch (erro) {
       console.error(`Erro ao sincronizar corredor ${corredor.strava_id}:`, erro);
       throw erro;
     }
   }
 
-  async processarEventoWebhook(evento: any) {
+  async processarEventoWebhook(evento: {
+    object_type: string;
+    object_id: number;
+    aspect_type: string;
+    owner_id: number;
+  }) {
     console.log("Processando evento webhook:", evento);
 
     if (evento.object_type !== "activity") {
@@ -135,7 +111,7 @@ export class ServicoSincronizacao {
 
     try {
       if (evento.aspect_type === "delete") {
-        await this.supabaseAdmin.from("atividades").delete().eq("id", activityId);
+        await this.atividadeRepo.removerPorId(activityId);
         console.log(`Atividade ${activityId} removida via webhook`);
       } else if (evento.aspect_type === "create" || evento.aspect_type === "update") {
         await this.sincronizarAtividadeUnica(runnerId, activityId);
@@ -151,10 +127,10 @@ export class ServicoSincronizacao {
       const atividade = await this.stravaGateway.buscarAtividade(tokenAcesso, activityId);
 
       if (atividade.type !== "Run") {
-        return; // Ignora se não for corrida
+        return;
       }
 
-      const { error } = await this.supabaseAdmin.from("atividades").upsert({
+      await this.atividadeRepo.upsert({
         id: atividade.id,
         corredor_id: runnerId,
         distancia: atividade.distance,
@@ -163,12 +139,9 @@ export class ServicoSincronizacao {
         tipo: atividade.type,
       });
 
-      if (error) {
-        throw new Error(`Erro ao upsert atividade ${activityId}: ${error.message}`);
-      }
       console.log(`Atividade ${activityId} sincronizada com sucesso via webhook`);
     } catch (error) {
-      if (error instanceof Error && error.message === "Atividade não encontrada") {
+      if (error instanceof AtividadeNaoEncontradaError) {
         console.warn(`Atividade ${activityId} não encontrada no Strava. Ignorando.`);
         return;
       }

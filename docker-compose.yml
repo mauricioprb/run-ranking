@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: run_ranking
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./src/infra/db/migrations/0001_initial.sql:/docker-entrypoint-initdb.d/01-init.sql
+
+volumes:
+  pgdata:

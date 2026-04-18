@@ -11,19 +11,12 @@ CREATE TABLE IF NOT EXISTS corredores (
 CREATE TABLE IF NOT EXISTS atividades (
   id BIGINT PRIMARY KEY,
   corredor_id BIGINT REFERENCES corredores(strava_id) ON DELETE CASCADE,
-  distancia FLOAT NOT NULL,
+  distancia DOUBLE PRECISION NOT NULL,
   tempo INTEGER,
   data_inicio TIMESTAMPTZ NOT NULL,
   tipo TEXT NOT NULL
 );
 
-ALTER TABLE corredores ENABLE ROW LEVEL SECURITY;
-ALTER TABLE atividades ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Leitura pública" ON corredores
-  FOR SELECT
-  USING (true);
-
-CREATE POLICY "Leitura pública" ON atividades
-  FOR SELECT
-  USING (true);
+CREATE INDEX IF NOT EXISTS idx_atividades_corredor_id ON atividades(corredor_id);
+CREATE INDEX IF NOT EXISTS idx_atividades_data_inicio ON atividades(data_inicio);
+CREATE INDEX IF NOT EXISTS idx_corredores_esta_ativo ON corredores(esta_ativo);

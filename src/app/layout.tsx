@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Runking - Classificação dos guri",
-  description: "Guri que corre mais, fica no topo.",
+  title: "Runking -  Classificação de corridas",
+  description: "Classificação de corridas",
 };
 
 export default function RootLayout({

@@ -1,4 +1,5 @@
-import { getRankingData } from "@/lib/data";
+import { ServicoRanking } from "@/core/services/ranking";
+import { corredorRepository } from "@/infra/db/repositories";
 import { cn } from "@/lib/utils";
 import {
   Table,
@@ -23,7 +24,8 @@ export async function RankingList({
   endDate?: string;
   limited?: boolean;
 }) {
-  const ranking = await getRankingData(year, startDate, endDate, limited);
+  const servicoRanking = new ServicoRanking(corredorRepository);
+  const ranking = await servicoRanking.getRankingData(year, startDate, endDate, limited);
 
   return (
     <Table>

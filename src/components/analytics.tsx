@@ -32,7 +32,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { RankingItem } from "@/lib/data";
+import { RankingItem } from "@/core/services/ranking";
 
 export function Analytics({ ranking }: { ranking: RankingItem[] }) {
   const months = [

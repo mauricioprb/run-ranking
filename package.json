@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "drizzle-kit migrate",
+    "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",
@@ -15,18 +18,17 @@
     "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.4",
-    "@supabase/ssr": "^0.8.0",
-    "@supabase/supabase-js": "^2.89.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
-    "lucide-react": "^0.562.0",
-    "next": "16.1.1",
+    "drizzle-orm": "^0.45.2",
+    "lucide-react": "^1.8.0",
+    "next": "^16.2.4",
     "next-themes": "^0.4.6",
-    "raw-body": "^3.0.2",
-    "react": "19.2.3",
+    "pg": "^8.20.0",
+    "react": "^19.2.5",
     "react-day-picker": "^8.10.1",
-    "react-dom": "19.2.3",
+    "react-dom": "^19.2.5",
     "react-theme-switch-animation": "^1.0.0",
     "recharts": "^2.15.4",
     "sonner": "^2.0.7",
@@ -38,12 +40,14 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^9",
-    "eslint-config-next": "16.1.1",
+    "eslint-config-next": "^16.2.4",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^6.0.3"
   },
   "overrides": {
     "react-day-picker": {

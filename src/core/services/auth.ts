@@ -1,109 +1,70 @@
-import { StravaGateway } from "@/infra/strava/gateway";
-import { createClient } from "@supabase/supabase-js";
+import type { CorredorRepository } from "@/core/repositories/corredor.repository";
+import type { StravaGateway } from "@/infra/strava/gateway";
+import { CorredorNaoEncontradoError, TokenExpiradoError } from "@/core/errors";
+import { encrypt, decrypt } from "@/lib/crypto";
 
 export class ServicoAutenticacao {
-  private stravaGateway: StravaGateway;
-
-  constructor() {
-    this.stravaGateway = new StravaGateway();
-  }
+  constructor(
+    private corredorRepo: CorredorRepository,
+    private stravaGateway: StravaGateway,
+  ) {}
 
   async loginComStrava(codigo: string) {
     const dadosToken = await this.stravaGateway.trocarCodigoPorToken(codigo);
     const { athlete, access_token, refresh_token, expires_at } = dadosToken;
 
-    const supabaseAdmin = this.criarClienteAdmin();
-
-    const { data: corredorExistente } = await supabaseAdmin
-      .from("corredores")
-      .select("strava_id")
-      .eq("strava_id", athlete.id)
-      .single();
+    const corredorExistente = await this.corredorRepo.buscarPorStravaId(athlete.id);
 
     if (corredorExistente) {
-      const { error: erroUpdate } = await supabaseAdmin
-        .from("corredores")
-        .update({
-          nome: `${athlete.firstname} ${athlete.lastname}`,
-          url_avatar: athlete.profile,
-          token_acesso: access_token,
-          token_atualizacao: refresh_token,
-          expira_em: expires_at,
-        })
-        .eq("strava_id", athlete.id);
-
-      if (erroUpdate) {
-        throw new Error(`Erro ao atualizar corredor: ${erroUpdate.message}`);
-      }
+      await this.corredorRepo.atualizar(athlete.id, {
+        nome: `${athlete.firstname} ${athlete.lastname}`,
+        url_avatar: athlete.profile,
+        token_acesso: encrypt(access_token),
+        token_atualizacao: encrypt(refresh_token),
+        expira_em: expires_at,
+      });
     } else {
-      const { error: erroInsert } = await supabaseAdmin.from("corredores").insert({
+      await this.corredorRepo.inserir({
         strava_id: athlete.id,
         nome: `${athlete.firstname} ${athlete.lastname}`,
         url_avatar: athlete.profile,
-        token_acesso: access_token,
-        token_atualizacao: refresh_token,
+        token_acesso: encrypt(access_token),
+        token_atualizacao: encrypt(refresh_token),
         expira_em: expires_at,
         esta_ativo: false,
       });
-
-      if (erroInsert) {
-        throw new Error(`Erro ao cadastrar corredor: ${erroInsert.message}`);
-      }
     }
 
     return { sucesso: true, corredor: athlete, isNewUser: !corredorExistente };
   }
 
-  async garantirTokenValido(stravaId: number) {
-    const supabaseAdmin = this.criarClienteAdmin();
+  async garantirTokenValido(stravaId: number): Promise<string> {
+    const corredor = await this.corredorRepo.buscarPorStravaId(stravaId);
 
-    const { data: corredor, error } = await supabaseAdmin
-      .from("corredores")
-      .select("token_acesso, token_atualizacao, expira_em")
-      .eq("strava_id", stravaId)
-      .single();
-
-    if (error || !corredor) {
-      throw new Error("Corredor não encontrado para atualização de token");
+    if (!corredor) {
+      throw new CorredorNaoEncontradoError(stravaId);
     }
 
     const agora = Math.floor(Date.now() / 1000);
     if (corredor.expira_em > agora + 300) {
-      return corredor.token_acesso;
+      return decrypt(corredor.token_acesso);
     }
 
     try {
-      const novosTokens = await this.stravaGateway.atualizarToken(corredor.token_atualizacao);
+      const novosTokens = await this.stravaGateway.atualizarToken(
+        decrypt(corredor.token_atualizacao),
+      );
 
-      await supabaseAdmin
-        .from("corredores")
-        .update({
-          token_acesso: novosTokens.access_token,
-          token_atualizacao: novosTokens.refresh_token,
-          expira_em: novosTokens.expires_at,
-        })
-        .eq("strava_id", stravaId);
+      await this.corredorRepo.atualizar(stravaId, {
+        token_acesso: encrypt(novosTokens.access_token),
+        token_atualizacao: encrypt(novosTokens.refresh_token),
+        expira_em: novosTokens.expires_at,
+      });
 
       return novosTokens.access_token;
     } catch (e) {
       console.error("Falha ao renovar token:", e);
-      throw e;
+      throw new TokenExpiradoError(stravaId);
     }
-  }
-
-  private criarClienteAdmin() {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-    if (!serviceKey) {
-      throw new Error("SUPABASE_SERVICE_ROLE_KEY não definida");
-    }
-
-    return createClient(url, serviceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
   }
 }
