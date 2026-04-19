@@ -7,7 +7,7 @@ const envSchema = z.object({
   STRAVA_VERIFY_TOKEN: z.string().default("STRAVA"),
   STRAVA_SUBSCRIPTION_ID: z.string().optional(),
   CRON_SECRET: z.string().min(1),
-  NEXT_PUBLIC_APP_URL: z.string().url(),
+  NEXT_PUBLIC_APP_URL: z.url(),
   TOKEN_ENCRYPTION_KEY: z.string().length(64),
 });
 
