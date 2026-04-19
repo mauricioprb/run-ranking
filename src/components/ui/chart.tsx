@@ -93,6 +93,16 @@ ${colorConfig
 
 const ChartTooltip = Tooltip;
 
+type ChartPayloadValue = number | string | (number | string)[];
+
+type ChartPayloadItem = {
+  value?: ChartPayloadValue;
+  name?: string;
+  dataKey?: string | number;
+  color?: string;
+  payload?: Record<string, unknown> & { fill?: string };
+};
+
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<typeof Tooltip> &
@@ -100,15 +110,21 @@ const ChartTooltipContent = React.forwardRef<
       hideLabel?: boolean;
       hideIndicator?: boolean;
       indicator?: "line" | "dot" | "dashed";
-      payload?: any[];
-      label?: any;
-      labelFormatter?: any;
+      payload?: ChartPayloadItem[];
+      label?: unknown;
+      labelFormatter?: (label: unknown, payload: ChartPayloadItem[]) => React.ReactNode;
       labelClassName?: string;
-      formatter?: any;
+      formatter?: (
+        value: unknown,
+        name: unknown,
+        item: ChartPayloadItem,
+        index: number,
+        payload: unknown,
+      ) => React.ReactNode;
       color?: string;
       nameKey?: string;
       labelKey?: string;
-      valueFormatter?: (value: any) => React.ReactNode;
+      valueFormatter?: (value: ChartPayloadValue) => React.ReactNode;
     }
 >(
   (
@@ -177,7 +193,7 @@ const ChartTooltipContent = React.forwardRef<
           {payload.map((item, index) => {
             const key = `${nameKey || item.name || item.dataKey || "value"}`;
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
-            const indicatorColor = color || itemConfig?.color || item.payload.fill || item.color;
+            const indicatorColor = color || itemConfig?.color || item.payload?.fill || item.color;
 
             return (
               <div
@@ -249,10 +265,16 @@ ChartTooltipContent.displayName = "ChartTooltip";
 
 const ChartLegend = Legend;
 
+type ChartLegendItem = {
+  value?: string;
+  dataKey?: string | number;
+  color?: string;
+};
+
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
-    payload?: any[];
+    payload?: ChartLegendItem[];
     verticalAlign?: "top" | "middle" | "bottom";
     hideIcon?: boolean;
     nameKey?: string;

@@ -22,9 +22,7 @@ export function DateRangeFilter({ className }: { className?: string }) {
   const startDateParam = searchParams.get("startDate");
   const endDateParam = searchParams.get("endDate");
 
-  const prevYearRef = React.useRef(currentYear);
-
-  const [date, setDate] = React.useState<DateRange | undefined>(() => {
+  const date = React.useMemo<DateRange | undefined>(() => {
     if (startDateParam && endDateParam) {
       return {
         from: new Date(startDateParam),
@@ -32,45 +30,40 @@ export function DateRangeFilter({ className }: { className?: string }) {
       };
     }
     return undefined;
-  });
+  }, [startDateParam, endDateParam]);
+
+  const prevYearRef = React.useRef(currentYear);
 
   React.useEffect(() => {
-    if (prevYearRef.current !== currentYear) {
-      prevYearRef.current = currentYear;
-      if (date?.from && date.from.getFullYear() !== currentYear) {
-        setDate(undefined);
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete("startDate");
-        params.delete("endDate");
-        router.push(`/?${params.toString()}`);
-      }
-    }
-  }, [currentYear, date, router, searchParams]);
-
-  const handleSelect = (newDate: DateRange | undefined) => {
-    setDate(newDate);
-
-    if (newDate?.from && newDate?.to) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("startDate", newDate.from.toISOString());
-      params.set("endDate", newDate.to.toISOString());
-
-      if (newDate.from.getFullYear() !== currentYear) {
-        params.set("year", newDate.from.getFullYear().toString());
-      }
-
-      router.push(`/?${params.toString()}`);
-    } else if (!newDate) {
+    if (prevYearRef.current === currentYear) return;
+    prevYearRef.current = currentYear;
+    if (date?.from && date.from.getFullYear() !== currentYear) {
       const params = new URLSearchParams(searchParams.toString());
       params.delete("startDate");
       params.delete("endDate");
       router.push(`/?${params.toString()}`);
     }
+  }, [currentYear, date, router, searchParams]);
+
+  const handleSelect = (newDate: DateRange | undefined) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (newDate?.from && newDate?.to) {
+      params.set("startDate", newDate.from.toISOString());
+      params.set("endDate", newDate.to.toISOString());
+      if (newDate.from.getFullYear() !== currentYear) {
+        params.set("year", newDate.from.getFullYear().toString());
+      }
+    } else {
+      params.delete("startDate");
+      params.delete("endDate");
+    }
+
+    router.push(`/?${params.toString()}`);
   };
 
   const clearFilter = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setDate(undefined);
     const params = new URLSearchParams(searchParams.toString());
     params.delete("startDate");
     params.delete("endDate");
