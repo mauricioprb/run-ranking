@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import { ServicoAutenticacao } from "@/core/services/auth";
 import { ServicoSincronizacao } from "@/core/services/sync";
 import { StravaGateway } from "@/infra/strava/gateway";
@@ -12,18 +13,18 @@ export async function GET(request: Request) {
   const state = searchParams.get("state");
 
   if (error) {
-    return NextResponse.redirect(new URL("/?error=auth_failed", request.url));
+    return NextResponse.redirect(new URL("/?error=auth_failed", env.NEXT_PUBLIC_APP_URL));
   }
 
   if (!code) {
-    return NextResponse.redirect(new URL("/?error=auth_failed", request.url));
+    return NextResponse.redirect(new URL("/?error=auth_failed", env.NEXT_PUBLIC_APP_URL));
   }
 
   const cookieStore = await cookies();
   const savedState = cookieStore.get("strava_oauth_state")?.value;
 
   if (!state || !savedState || state !== savedState) {
-    return NextResponse.redirect(new URL("/?error=auth_failed", request.url));
+    return NextResponse.redirect(new URL("/?error=auth_failed", env.NEXT_PUBLIC_APP_URL));
   }
 
   cookieStore.delete("strava_oauth_state");
@@ -41,9 +42,11 @@ export async function GET(request: Request) {
     const resultado = await authService.loginComStrava(code);
     await syncService.sincronizarCorredor({ strava_id: resultado.corredor.id });
 
-    return NextResponse.redirect(new URL(`/?success=true&new=${resultado.isNewUser}`, request.url));
+    return NextResponse.redirect(
+      new URL(`/?success=true&new=${resultado.isNewUser}`, env.NEXT_PUBLIC_APP_URL),
+    );
   } catch (err) {
     console.error("Erro no callback de auth:", err);
-    return NextResponse.redirect(new URL("/?error=auth_failed", request.url));
+    return NextResponse.redirect(new URL("/?error=auth_failed", env.NEXT_PUBLIC_APP_URL));
   }
 }
