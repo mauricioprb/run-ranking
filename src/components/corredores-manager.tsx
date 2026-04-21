@@ -33,6 +33,7 @@ import {
   XCircle,
   RefreshCw,
   Clock,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -123,6 +124,15 @@ export function CorredoresManager() {
     });
   };
 
+  const atualizarLista = async () => {
+    setLoading(true);
+    const dados = await carregarCorredores();
+    if (dados) {
+      setCorredores(dados);
+    }
+    setLoading(false);
+  };
+
   const corredoresFiltrados = corredores.filter((c) =>
     c.nome.toLowerCase().includes(busca.toLowerCase()),
   );
@@ -140,39 +150,43 @@ export function CorredoresManager() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:space-y-8">
       {/* Status cards */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-        <Card>
-          <CardContent className="pt-6">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
+        <Card className="transition-all hover:shadow-md hover:border-primary/20">
+          <CardContent className="p-5 sm:p-6">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10">
                 <Users className="h-6 w-6 text-primary" />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total</p>
-                <p className="text-2xl font-bold">{loading ? "–" : corredores.length}</p>
+              <div className="min-w-0">
+                <p className="text-sm text-muted-foreground font-medium">Total</p>
+                <p className="text-2xl font-bold leading-tight mt-0.5">
+                  {loading ? "–" : corredores.length}
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="transition-all hover:shadow-md hover:border-green-500/30">
+          <CardContent className="p-5 sm:p-6">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-500/10">
                 <UserCheck className="h-6 w-6 text-green-500" />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Ativos</p>
-                <p className="text-2xl font-bold">{loading ? "–" : ativos.length}</p>
+              <div className="min-w-0">
+                <p className="text-sm text-muted-foreground font-medium">Ativos</p>
+                <p className="text-2xl font-bold leading-tight mt-0.5">
+                  {loading ? "–" : ativos.length}
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="transition-all hover:shadow-md hover:border-[#fc5200]/30">
+          <CardContent className="p-5 sm:p-6">
             <div className="flex items-center gap-4">
               <div
                 className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
@@ -180,9 +194,11 @@ export function CorredoresManager() {
               >
                 <Clock className="h-6 w-6" style={{ color: "#fc5200" }} />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Pendentes</p>
-                <p className="text-2xl font-bold">{loading ? "–" : pendentes.length}</p>
+              <div className="min-w-0">
+                <p className="text-sm text-muted-foreground font-medium">Pendentes</p>
+                <p className="text-2xl font-bold leading-tight mt-0.5">
+                  {loading ? "–" : pendentes.length}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -190,16 +206,18 @@ export function CorredoresManager() {
       </div>
 
       {/* Main table card */}
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden">
+        <CardHeader className="p-5 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle>Corredores</CardTitle>
-              <CardDescription>Gerencie o acesso dos corredores à plataforma.</CardDescription>
+            <div className="space-y-1.5">
+              <CardTitle className="text-lg">Corredores</CardTitle>
+              <CardDescription>
+                Gerencie o acesso dos corredores à plataforma.
+              </CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative flex-1 sm:flex-initial">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <Input
                   placeholder="Buscar corredor..."
                   value={busca}
@@ -210,15 +228,10 @@ export function CorredoresManager() {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={async () => {
-                  setLoading(true);
-                  const dados = await carregarCorredores();
-                  if (dados) {
-                    setCorredores(dados);
-                  }
-                  setLoading(false);
-                }}
+                onClick={atualizarLista}
                 disabled={loading}
+                aria-label="Atualizar lista"
+                title="Atualizar lista"
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               </Button>
@@ -230,7 +243,7 @@ export function CorredoresManager() {
 
         <CardContent className="p-0">
           {loading ? (
-            <div className="p-6 space-y-4">
+            <div className="p-5 sm:p-6 space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-4">
                   <Skeleton className="h-10 w-10 rounded-full" />
@@ -238,60 +251,78 @@ export function CorredoresManager() {
                     <Skeleton className="h-4 w-40" />
                     <Skeleton className="h-3 w-24" />
                   </div>
-                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-8 w-24" />
                 </div>
               ))}
             </div>
           ) : corredoresFiltrados.length === 0 ? (
-            <div className="p-12 text-center">
-              <UserX className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-              <p className="text-muted-foreground font-medium">
+            <div className="p-10 sm:p-14 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                <UserX className="h-7 w-7 text-muted-foreground/60" />
+              </div>
+              <p className="text-foreground font-medium">
                 {busca ? "Nenhum corredor encontrado." : "Nenhum corredor cadastrado ainda."}
               </p>
+              <p className="text-muted-foreground text-sm mt-1.5">
+                {busca
+                  ? "Tente buscar com outro termo."
+                  : "Os corredores aparecerão aqui após o primeiro cadastro."}
+              </p>
               {busca && (
-                <p className="text-muted-foreground text-sm mt-1">Tente buscar com outro termo.</p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => setBusca("")}
+                >
+                  Limpar busca
+                </Button>
               )}
             </div>
           ) : (
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead className="pl-6">Corredor</TableHead>
-                  <TableHead>Strava ID</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right pr-6">Ações</TableHead>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="pl-5 sm:pl-6 h-12">Corredor</TableHead>
+                  <TableHead className="h-12 hidden md:table-cell">Strava ID</TableHead>
+                  <TableHead className="h-12">Status</TableHead>
+                  <TableHead className="text-right pr-5 sm:pr-6 h-12">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {corredoresFiltrados.map((corredor) => (
                   <TableRow key={corredor.strava_id} className="group">
-                    <TableCell className="pl-6">
+                    <TableCell className="pl-5 sm:pl-6 py-3.5">
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10 border-2 border-border">
-                          <AvatarImage src={corredor.url_avatar ?? undefined} alt={corredor.nome} />
+                        <Avatar className="h-10 w-10 border-2 border-border shrink-0">
+                          <AvatarImage
+                            src={corredor.url_avatar ?? undefined}
+                            alt={corredor.nome}
+                          />
                           <AvatarFallback className="text-xs font-semibold bg-muted">
                             {getIniciais(corredor.nome)}
                           </AvatarFallback>
                         </Avatar>
-                        <div>
-                          <p className="font-medium leading-none">{corredor.nome}</p>
+                        <div className="min-w-0">
+                          <p className="font-medium leading-none truncate">{corredor.nome}</p>
                           <a
                             href={`https://www.strava.com/athletes/${corredor.strava_id}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs text-muted-foreground hover:underline mt-1 inline-block"
+                            className="text-xs text-muted-foreground hover:text-foreground hover:underline mt-1.5 inline-flex items-center gap-1 cursor-pointer transition-colors"
                           >
-                            Ver no Strava ↗
+                            Ver no Strava
+                            <ExternalLink className="h-3 w-3" />
                           </a>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-3.5 hidden md:table-cell">
                       <code className="text-xs bg-muted px-2 py-1 rounded-md font-mono">
                         {corredor.strava_id}
                       </code>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-3.5">
                       {corredor.esta_ativo ? (
                         <Badge
                           variant="secondary"
@@ -314,7 +345,7 @@ export function CorredoresManager() {
                         </Badge>
                       )}
                     </TableCell>
-                    <TableCell className="text-right pr-6">
+                    <TableCell className="text-right pr-5 sm:pr-6 py-3.5">
                       {corredor.esta_ativo ? (
                         <Button
                           variant="ghost"
@@ -322,8 +353,8 @@ export function CorredoresManager() {
                           className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           onClick={() => abrirDialog(corredor, "desativar")}
                         >
-                          <XCircle className="h-4 w-4 mr-1.5" />
-                          Desativar
+                          <XCircle className="h-4 w-4" />
+                          <span className="hidden sm:inline">Desativar</span>
                         </Button>
                       ) : (
                         <Button
@@ -332,8 +363,8 @@ export function CorredoresManager() {
                           className="text-green-600 dark:text-green-400 hover:text-green-600 hover:bg-green-500/10"
                           onClick={() => abrirDialog(corredor, "aprovar")}
                         >
-                          <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                          Aprovar
+                          <CheckCircle2 className="h-4 w-4" />
+                          <span className="hidden sm:inline">Aprovar</span>
                         </Button>
                       )}
                     </TableCell>
@@ -348,49 +379,67 @@ export function CorredoresManager() {
       {/* Confirmation dialog */}
       <Dialog open={dialogAberto} onOpenChange={setDialogAberto}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
+          <DialogHeader className="space-y-3">
+            <div
+              className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full ${
+                acaoSelecionada === "aprovar" ? "bg-green-500/10" : "bg-destructive/10"
+              }`}
+            >
+              {acaoSelecionada === "aprovar" ? (
+                <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+              ) : (
+                <XCircle className="h-6 w-6 text-destructive" />
+              )}
+            </div>
+            <DialogTitle className="text-center">
               {acaoSelecionada === "aprovar" ? "Aprovar corredor" : "Desativar corredor"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-center">
               {acaoSelecionada === "aprovar" ? (
                 <>
-                  Tem certeza que deseja aprovar <strong>{corredorSelecionado?.nome}</strong>? O
+                  Tem certeza que deseja aprovar{" "}
+                  <strong className="text-foreground">{corredorSelecionado?.nome}</strong>? O
                   corredor passará a aparecer no ranking público.
                 </>
               ) : (
                 <>
-                  Tem certeza que deseja desativar <strong>{corredorSelecionado?.nome}</strong>? O
+                  Tem certeza que deseja desativar{" "}
+                  <strong className="text-foreground">{corredorSelecionado?.nome}</strong>? O
                   corredor será removido do ranking público.
                 </>
               )}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setDialogAberto(false)} disabled={isPending}>
+          <DialogFooter className="gap-2 sm:gap-2 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setDialogAberto(false)}
+              disabled={isPending}
+              className="sm:flex-1"
+            >
               Cancelar
             </Button>
             <Button
               onClick={executarAcao}
               disabled={isPending}
               variant={acaoSelecionada === "desativar" ? "destructive" : "default"}
-              className={
+              className={`sm:flex-1 ${
                 acaoSelecionada === "aprovar" ? "bg-green-600 hover:bg-green-700 text-white" : ""
-              }
+              }`}
             >
               {isPending ? (
                 <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  <RefreshCw className="h-4 w-4 animate-spin" />
                   Processando...
                 </>
               ) : acaoSelecionada === "aprovar" ? (
                 <>
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                  <CheckCircle2 className="h-4 w-4" />
                   Aprovar
                 </>
               ) : (
                 <>
-                  <XCircle className="h-4 w-4 mr-2" />
+                  <XCircle className="h-4 w-4" />
                   Desativar
                 </>
               )}

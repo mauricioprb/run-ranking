@@ -36,32 +36,37 @@ export default async function PainelLogin() {
         <ModeToggle />
       </div>
 
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center space-y-4">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="text-center space-y-4 pb-4">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 ring-8 ring-primary/5">
             <Shield className="h-8 w-8 text-primary" />
           </div>
-          <div>
+          <div className="space-y-2">
             <CardTitle className="text-2xl font-bold">Painel Admin</CardTitle>
-            <CardDescription className="mt-2">
+            <CardDescription className="text-sm leading-relaxed">
               Faça login com o GitHub para acessar o painel de gerenciamento do Runking.
             </CardDescription>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-2">
           {session?.user && !isAdmin ? (
             <div className="space-y-4">
-              <div className="bg-destructive/10 text-destructive text-sm p-4 rounded-md font-medium text-center">
-                Acesso negado.
-                <br />
-                <br />
-                <span className="text-xs font-mono break-all text-left block bg-background/50 p-2 rounded">
-                  Username: {session?.user?.username ?? "null"}
-                  <br />
-                  Email: {session?.user?.email ?? "null"}
-                  <br />
-                  Permissão (.env): {process.env.ADMIN_USERS ?? "null"}
-                </span>
+              <div className="bg-destructive/10 text-destructive p-4 rounded-lg font-medium text-center space-y-3 border border-destructive/20">
+                <p className="text-sm">Acesso negado.</p>
+                <div className="text-xs font-mono break-all text-left block bg-background/60 p-3 rounded-md space-y-1 border">
+                  <p>
+                    <strong className="font-semibold">Username:</strong>{" "}
+                    {session?.user?.username ?? "null"}
+                  </p>
+                  <p>
+                    <strong className="font-semibold">Email:</strong>{" "}
+                    {session?.user?.email ?? "null"}
+                  </p>
+                  <p>
+                    <strong className="font-semibold">Permissão (.env):</strong>{" "}
+                    {process.env.ADMIN_USERS ?? "null"}
+                  </p>
+                </div>
               </div>
               <form
                 action={async () => {
@@ -92,7 +97,7 @@ export default async function PainelLogin() {
               </Button>
             </form>
           )}
-          <p className="text-xs text-muted-foreground text-center mt-6">
+          <p className="text-xs text-muted-foreground text-center mt-6 leading-relaxed">
             Apenas administradores autorizados podem acessar este painel.
           </p>
         </CardContent>
