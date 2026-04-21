@@ -8,12 +8,12 @@ export const SchemaAtletaStrava = z.object({
 });
 
 export const SchemaRespostaTokenStrava = z.object({
-  token_type: z.literal("Bearer"),
+  token_type: z.string(),
   expires_at: z.number(),
   expires_in: z.number(),
   refresh_token: z.string(),
   access_token: z.string(),
-  athlete: SchemaAtletaStrava,
+  athlete: SchemaAtletaStrava.optional(),
 });
 
 export type AtletaStrava = z.infer<typeof SchemaAtletaStrava>;
