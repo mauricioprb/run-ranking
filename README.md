@@ -41,22 +41,22 @@ cp .env.example .env.local
 
 Edite o `.env.local` com suas credenciais:
 
-| Variável | Descrição |
-|----------|-----------|
-| `DATABASE_URL` | Connection string do PostgreSQL. O padrão local funciona com o docker-compose |
-| `STRAVA_CLIENT_ID` | ID do app no [painel Strava](https://www.strava.com/settings/api) |
-| `STRAVA_CLIENT_SECRET` | Secret do app no painel Strava |
-| `STRAVA_VERIFY_TOKEN` | Token para verificar o webhook do Strava (pode ser qualquer string) |
+| Variável                 | Descrição                                                                                                |
+| ------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`           | Connection string do PostgreSQL. O padrão local funciona com o docker-compose                            |
+| `STRAVA_CLIENT_ID`       | ID do app no [painel Strava](https://www.strava.com/settings/api)                                        |
+| `STRAVA_CLIENT_SECRET`   | Secret do app no painel Strava                                                                           |
+| `STRAVA_VERIFY_TOKEN`    | Token para verificar o webhook do Strava (pode ser qualquer string)                                      |
 | `STRAVA_SUBSCRIPTION_ID` | ID da subscription do webhook (opcional, verificar [docs](https://developers.strava.com/docs/webhooks/)) |
-| `CRON_SECRET` | Token Bearer para proteger o endpoint de sync (`/api/cron/sync`) |
-| `NEXT_PUBLIC_APP_URL` | URL base da aplicação (`http://localhost:3000` em dev) |
-| `TOKEN_ENCRYPTION_KEY` | Chave de 32 bytes em hex para criptografar tokens. Gerar com: `openssl rand -hex 32` |
+| `CRON_SECRET`            | Token Bearer para proteger o endpoint de sync (`/api/cron/sync`)                                         |
+| `NEXT_PUBLIC_APP_URL`    | URL base da aplicação (`http://localhost:3000` em dev)                                                   |
+| `TOKEN_ENCRYPTION_KEY`   | Chave de 32 bytes em hex para criptografar tokens. Gerar com: `openssl rand -hex 32`                     |
 
 ### 4. Configurar o app no Strava
 
 1. Acesse [strava.com/settings/api](https://www.strava.com/settings/api)
 2. Em **Authorization Callback Domain**, configure: `localhost` (dev) ou seu dominio (prod)
-3. O redirect URI usado pela app é: `{NEXT_PUBLIC_APP_URL}/api/auth/callback`
+3. O redirect URI usado pela app é: `{NEXT_PUBLIC_APP_URL}/api/strava/callback`
 
 ### 5. Rodar em desenvolvimento
 
@@ -68,15 +68,15 @@ Acesse [localhost:3000](http://localhost:3000).
 
 ## Scripts
 
-| Comando | Descricao |
-|---------|-----------|
-| `npm run dev` | Servidor de desenvolvimento |
-| `npm run build` | Build de producao |
-| `npm start` | Iniciar em producao |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | Verificacao de tipos |
+| Comando               | Descricao                          |
+| --------------------- | ---------------------------------- |
+| `npm run dev`         | Servidor de desenvolvimento        |
+| `npm run build`       | Build de producao                  |
+| `npm start`           | Iniciar em producao                |
+| `npm run lint`        | ESLint                             |
+| `npm run typecheck`   | Verificacao de tipos               |
 | `npm run db:generate` | Gerar migration a partir do schema |
-| `npm run db:migrate` | Executar migrations pendentes |
+| `npm run db:migrate`  | Executar migrations pendentes      |
 
 ## Deploy com Docker
 
@@ -136,7 +136,7 @@ Configure um cron job (ex: GitHub Actions, Railway cron, etc.) para rodar period
 src/
   app/                     # Pages e API routes (Next.js App Router)
     api/
-      auth/callback/       # OAuth callback do Strava
+      strava/callback/     # OAuth callback do Strava
       cron/sync/           # Endpoint de sync completo
       health/              # Health check
       webhook/strava/      # Webhook do Strava

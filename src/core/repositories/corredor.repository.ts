@@ -30,6 +30,7 @@ export interface CorredorRepository {
   inserir(corredor: DadosCorredor): Promise<void>;
   atualizar(stravaId: number, dados: Partial<DadosCorredor>): Promise<void>;
   listarAtivos(): Promise<DadosCorredor[]>;
+  listarTodos(): Promise<DadosCorredor[]>;
   listarAtivosComAtividades(): Promise<CorredorComAtividades[]>;
   existePorStravaId(stravaId: number): Promise<boolean>;
 }

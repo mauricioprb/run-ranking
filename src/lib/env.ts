@@ -9,6 +9,10 @@ const envSchema = z.object({
   CRON_SECRET: z.string().min(1),
   NEXT_PUBLIC_APP_URL: z.url(),
   TOKEN_ENCRYPTION_KEY: z.string().length(64),
+  AUTH_SECRET: z.string().min(1),
+  GITHUB_CLIENT_ID: z.string().min(1),
+  GITHUB_CLIENT_SECRET: z.string().min(1),
+  ADMIN_USERS: z.string().min(1),
 });
 
 function validateEnv() {

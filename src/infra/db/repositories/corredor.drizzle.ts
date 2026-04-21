@@ -46,7 +46,8 @@ export class CorredorDrizzleRepository implements CorredorRepository {
     if (dados.nome !== undefined) updateData.nome = dados.nome;
     if (dados.url_avatar !== undefined) updateData.url_avatar = dados.url_avatar;
     if (dados.token_acesso !== undefined) updateData.token_acesso = dados.token_acesso;
-    if (dados.token_atualizacao !== undefined) updateData.token_atualizacao = dados.token_atualizacao;
+    if (dados.token_atualizacao !== undefined)
+      updateData.token_atualizacao = dados.token_atualizacao;
     if (dados.expira_em !== undefined) updateData.expira_em = dados.expira_em;
     if (dados.esta_ativo !== undefined) updateData.esta_ativo = dados.esta_ativo;
 
@@ -54,10 +55,7 @@ export class CorredorDrizzleRepository implements CorredorRepository {
   }
 
   async listarAtivos(): Promise<DadosCorredor[]> {
-    const resultado = await db
-      .select()
-      .from(corredores)
-      .where(eq(corredores.esta_ativo, true));
+    const resultado = await db.select().from(corredores).where(eq(corredores.esta_ativo, true));
 
     return resultado.map((row) => ({
       strava_id: row.strava_id,
@@ -67,6 +65,20 @@ export class CorredorDrizzleRepository implements CorredorRepository {
       token_atualizacao: row.token_atualizacao,
       expira_em: row.expira_em,
       esta_ativo: row.esta_ativo ?? true,
+    }));
+  }
+
+  async listarTodos(): Promise<DadosCorredor[]> {
+    const resultado = await db.select().from(corredores);
+
+    return resultado.map((row) => ({
+      strava_id: row.strava_id,
+      nome: row.nome,
+      url_avatar: row.url_avatar,
+      token_acesso: row.token_acesso,
+      token_atualizacao: row.token_atualizacao,
+      expira_em: row.expira_em,
+      esta_ativo: row.esta_ativo ?? false,
     }));
   }
 

@@ -5,7 +5,7 @@ import crypto from "node:crypto";
 
 export async function GET() {
   const state = crypto.randomUUID();
-  const redirectUri = `${env.NEXT_PUBLIC_APP_URL}/api/auth/callback`;
+  const redirectUri = `${env.NEXT_PUBLIC_APP_URL}/api/strava/callback`;
 
   const cookieStore = await cookies();
   cookieStore.set("strava_oauth_state", state, {
