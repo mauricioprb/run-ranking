@@ -1,4 +1,4 @@
-import { pgTable, bigint, text, boolean, doublePrecision, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, bigint, bigserial, text, boolean, doublePrecision, integer, timestamp, uniqueIndex, index } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const corredores = pgTable("corredores", {
@@ -30,3 +30,31 @@ export const atividadesRelations = relations(atividades, ({ one }) => ({
     references: [corredores.strava_id],
   }),
 }));
+
+export const eventosWebhook = pgTable(
+  "eventos_webhook",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    object_type: text("object_type").notNull(),
+    object_id: bigint("object_id", { mode: "number" }).notNull(),
+    aspect_type: text("aspect_type").notNull(),
+    owner_id: bigint("owner_id", { mode: "number" }).notNull(),
+    event_time: bigint("event_time", { mode: "number" }).notNull(),
+    subscription_id: bigint("subscription_id", { mode: "number" }).notNull(),
+    status: text("status").notNull().default("pendente"),
+    tentativas: integer("tentativas").notNull().default(0),
+    ultimo_erro: text("ultimo_erro"),
+    criado_em: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
+    atualizado_em: timestamp("atualizado_em", { withTimezone: true }).notNull().defaultNow(),
+    processar_apos: timestamp("processar_apos", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("idx_eventos_webhook_unicos").on(
+      table.object_id,
+      table.aspect_type,
+      table.event_time,
+      table.owner_id,
+    ),
+    index("idx_eventos_webhook_fila").on(table.processar_apos),
+  ],
+);

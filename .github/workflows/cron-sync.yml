@@ -1,0 +1,45 @@
+name: Cron
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+    - cron: "0 * * * *"
+  workflow_dispatch:
+    inputs:
+      alvo:
+        description: "Qual endpoint chamar"
+        type: choice
+        required: true
+        default: fila
+        options:
+          - fila
+          - full-sync
+
+concurrency:
+  group: cron-${{ github.event.schedule || github.event.inputs.alvo }}
+  cancel-in-progress: false
+
+jobs:
+  chamar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determinar endpoint
+        id: alvo
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "endpoint=${{ github.event.inputs.alvo }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "0 * * * *" ]; then
+            echo "endpoint=full-sync" >> "$GITHUB_OUTPUT"
+          else
+            echo "endpoint=fila" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Chamar ${{ steps.alvo.outputs.endpoint }}
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl --fail --silent --show-error \
+            --max-time 300 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$APP_URL/api/cron/${{ steps.alvo.outputs.endpoint }}"

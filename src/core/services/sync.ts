@@ -100,8 +100,6 @@ export class ServicoSincronizacao {
     aspect_type: string;
     owner_id: number;
   }) {
-    console.log("Processando evento webhook:", evento);
-
     if (evento.object_type !== "activity") {
       return;
     }
@@ -109,15 +107,13 @@ export class ServicoSincronizacao {
     const activityId = evento.object_id;
     const runnerId = evento.owner_id;
 
-    try {
-      if (evento.aspect_type === "delete") {
-        await this.atividadeRepo.removerPorId(activityId);
-        console.log(`Atividade ${activityId} removida via webhook`);
-      } else if (evento.aspect_type === "create" || evento.aspect_type === "update") {
-        await this.sincronizarAtividadeUnica(runnerId, activityId);
-      }
-    } catch (error) {
-      console.error(`Erro ao processar webhook para atividade ${activityId}:`, error);
+    if (evento.aspect_type === "delete") {
+      await this.atividadeRepo.removerPorId(activityId);
+      return;
+    }
+
+    if (evento.aspect_type === "create" || evento.aspect_type === "update") {
+      await this.sincronizarAtividadeUnica(runnerId, activityId);
     }
   }
 
