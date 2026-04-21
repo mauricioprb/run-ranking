@@ -1,4 +1,4 @@
-CREATE TABLE "atividades" (
+CREATE TABLE IF NOT EXISTS "atividades" (
 	"id" bigint PRIMARY KEY NOT NULL,
 	"corredor_id" bigint,
 	"distancia" double precision NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE "atividades" (
 	"tipo" text NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "corredores" (
+CREATE TABLE IF NOT EXISTS "corredores" (
 	"strava_id" bigint PRIMARY KEY NOT NULL,
 	"nome" text NOT NULL,
 	"url_avatar" text,
@@ -17,7 +17,7 @@ CREATE TABLE "corredores" (
 	"esta_ativo" boolean DEFAULT true
 );
 --> statement-breakpoint
-CREATE TABLE "eventos_webhook" (
+CREATE TABLE IF NOT EXISTS "eventos_webhook" (
 	"id" bigserial PRIMARY KEY NOT NULL,
 	"object_type" text NOT NULL,
 	"object_id" bigint NOT NULL,
@@ -33,6 +33,11 @@ CREATE TABLE "eventos_webhook" (
 	"processar_apos" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "atividades" ADD CONSTRAINT "atividades_corredor_id_corredores_strava_id_fk" FOREIGN KEY ("corredor_id") REFERENCES "public"."corredores"("strava_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE UNIQUE INDEX "idx_eventos_webhook_unicos" ON "eventos_webhook" USING btree ("object_id","aspect_type","event_time","owner_id");--> statement-breakpoint
-CREATE INDEX "idx_eventos_webhook_fila" ON "eventos_webhook" USING btree ("processar_apos");
+DO $$ 
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'atividades_corredor_id_corredores_strava_id_fk') THEN
+        ALTER TABLE "atividades" ADD CONSTRAINT "atividades_corredor_id_corredores_strava_id_fk" FOREIGN KEY ("corredor_id") REFERENCES "public"."corredores"("strava_id") ON DELETE cascade ON UPDATE no action;
+    END IF;
+END $$;--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "idx_eventos_webhook_unicos" ON "eventos_webhook" USING btree ("object_id","aspect_type","event_time","owner_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_eventos_webhook_fila" ON "eventos_webhook" USING btree ("processar_apos");
