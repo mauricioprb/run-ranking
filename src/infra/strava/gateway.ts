@@ -1,4 +1,9 @@
-import { SchemaRespostaTokenStrava, type RespostaTokenStrava } from "@/core/domain/runner";
+import {
+  SchemaRespostaLoginStrava,
+  SchemaRespostaRefreshStrava,
+  type RespostaLoginStrava,
+  type RespostaRefreshStrava,
+} from "@/core/domain/runner";
 import { SchemaAtividadeStrava, type AtividadeStrava } from "@/core/domain/activity";
 import { AtividadeNaoEncontradaError, StravaApiError } from "@/core/errors";
 import { env } from "@/lib/env";
@@ -15,7 +20,7 @@ export class StravaGateway {
     this.clientSecret = env.STRAVA_CLIENT_SECRET;
   }
 
-  async trocarCodigoPorToken(codigo: string): Promise<RespostaTokenStrava> {
+  async trocarCodigoPorToken(codigo: string): Promise<RespostaLoginStrava> {
     const params = new URLSearchParams({
       client_id: this.clientId,
       client_secret: this.clientSecret,
@@ -35,10 +40,10 @@ export class StravaGateway {
     }
 
     const dados = await resposta.json();
-    return SchemaRespostaTokenStrava.parse(dados);
+    return SchemaRespostaLoginStrava.parse(dados);
   }
 
-  async atualizarToken(tokenAtualizacao: string): Promise<RespostaTokenStrava> {
+  async atualizarToken(tokenAtualizacao: string): Promise<RespostaRefreshStrava> {
     const params = new URLSearchParams({
       client_id: this.clientId,
       client_secret: this.clientSecret,
@@ -58,7 +63,7 @@ export class StravaGateway {
     }
 
     const dados = await resposta.json();
-    return SchemaRespostaTokenStrava.parse(dados);
+    return SchemaRespostaRefreshStrava.parse(dados);
   }
 
   async buscarAtividades(tokenAcesso: string, apos: number): Promise<AtividadeStrava[]> {
